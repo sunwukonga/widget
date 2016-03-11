@@ -4,13 +4,11 @@ Page Builder - WIP
 
 ### Configuration
 
-(environment) // from google, user purchased in last month
-
 ```go
 RegisterViewPath "templates"
 
 RegisterScope(layout.Scope{
-  Name: "From Google",
+  Name: "From Google", // User purchased in last month
   Visible: func() bool {
     // return
   },
@@ -21,7 +19,7 @@ RegisterWidget(layout.Widget{
   Requires: []{"Mini Cart", "navigation"},
   Template: "home_header",
   Setting: *admin.Resource,
-  Context: func() map[string]interface{} {
+  Context: func(Context) map[string]interface{} {
   },
 })
 
@@ -32,12 +30,20 @@ RegisterWidget(layout.Widget{
   Context: func() map[string]interface{} {
   },
 })
+
+context := layout.NewContext(Context{
+  AvailableWidget: []string{"Home Header"},
+  Options: map[string]interface{}{
+    "CurrentUser": user,
+    "CurrentProduct": product,
+  }},
+)
 ```
 
 ### Page
 
 ```html
-{{render_qor_layout "Qor Home Header" "Home Header" "Navigation"}}
+{{render_qor_layout "Qor Home Header" context}}
 ```
 
 ### Template
