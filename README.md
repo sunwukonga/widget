@@ -27,7 +27,7 @@ RegisterWidget(layout.Widget{
   Name:  "Mini Cart",
   Template: "mini_cart",
   Setting: *admin.Resource,
-  Context: func() map[string]interface{} {
+  Context: func(Context) map[string]interface{} {
   },
 })
 
@@ -38,6 +38,9 @@ context := layout.NewContext(Context{
     "CurrentProduct": product,
   }},
 )
+
+func (Context) Get(string) interface{} {
+}
 ```
 
 ### Page
