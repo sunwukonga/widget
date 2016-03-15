@@ -7,19 +7,13 @@ Page Builder - WIP
 ```go
 RegisterViewPath "templates"
 
-RegisterScope(layout.Scope{
-  Name: "From Google", // User purchased in last month
-  Visible: func() bool {
-    // return
-  },
-})
-
 RegisterWidget(layout.Widget{
-  Name:  "Home Header",
+  Name:  "Banner",
   Requires: []{"Mini Cart", "navigation"},
   Template: "home_header",
   Setting: *admin.Resource,
-  Context: func(Context) map[string]interface{} {
+  Context: func(context Context, setting interface{}) Context {
+   "widget"
   },
 })
 
@@ -32,7 +26,7 @@ RegisterWidget(layout.Widget{
 })
 
 context := layout.NewContext(Context{
-  AvailableWidget: []string{"Home Header"},
+  AvailableWidgets: []string{"Home Header"},
   Options: map[string]interface{}{
     "CurrentUser": user,
     "CurrentProduct": product,
@@ -46,7 +40,10 @@ func (Context) Get(string) interface{} {
 ### Page
 
 ```html
-{{render_qor_layout "Qor Home Header" context}}
+{{render_widget "Qor Home Header" context}}
+
+{{render_widget "Product Show" context}}
+  - {{render_widget "Cart" context}}
 ```
 
 ### Template
@@ -54,7 +51,7 @@ func (Context) Get(string) interface{} {
 ```go
 <div>
   <div class="col-lg-4">
-    {{embed_qor_layout "logo" "logo"}}
+    {{embed_widget "logo" "logo"}}
   </div>
 
   <div class="col-lg-8">
@@ -62,7 +59,7 @@ func (Context) Get(string) interface{} {
   </div>
 
   <div class="col-lg-12">
-    {{render_qor_layout "Mini Cart"}}
+    {{render_widget "Mini Cart"}}
   </div>
 </div>
 ```
