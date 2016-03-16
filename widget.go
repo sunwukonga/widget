@@ -3,7 +3,6 @@ package widget
 import (
 	"fmt"
 	"github.com/qor/admin"
-	"html/template"
 )
 
 type Widget struct {
@@ -14,6 +13,7 @@ type Widget struct {
 }
 
 var registeredWidgets []*Widget
+var viewPaths = []string{}
 
 func RegisterWidget(w *Widget) {
 	registeredWidgets = append(registeredWidgets, w)
@@ -26,8 +26,4 @@ func GetWidget(name string) (w Widget, err error) {
 		}
 	}
 	return Widget{}, fmt.Errorf("Widget: failed to find widget %v", name)
-}
-
-func (w *Widget) Render() template.HTML {
-	return template.HTML("Hello")
 }

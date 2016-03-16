@@ -6,8 +6,6 @@ Page Builder - WIP
 
 ```go
 
-widget.Register(qorAdmin)
-
 RegisterViewPath "templates"
 
 RegisterWidget(layout.Widget{

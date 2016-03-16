@@ -18,15 +18,17 @@ func init() {
 
 // Runner
 func TestRender(t *testing.T) {
+	widget.RegisterViewPath("github.com/qor/widget/test")
+
 	widget.RegisterWidget(&widget.Widget{
 		Name:     "Banner",
-		Template: "banner.tmpl",
+		Template: "banner",
 		Context:  func(context widget.Context, setting interface{}) widget.Context { return widget.Context{} },
 	})
 
 	widgetContext := widget.NewContext(map[string]interface{}{})
 	html := widget.Render("HomeBanner", widgetContext, "Banner")
-	if html != "Hello" {
+	if html != "Banner Widget\n" {
 		t.Errorf(color.RedString(fmt.Sprintf("\nWidget Render TestCase #%d: Failure Result: %s\n", 1, html)))
 	}
 }
