@@ -1,6 +1,10 @@
 package widget
 
-import "github.com/qor/admin"
+import (
+	"fmt"
+	"github.com/qor/admin"
+	"html/template"
+)
 
 type Widget struct {
 	Name     string
@@ -11,6 +15,19 @@ type Widget struct {
 
 var registeredWidgets []*Widget
 
-func RegisterWidget(scope *Widget) {
-	registeredWidgets = append(registeredWidgets, scope)
+func RegisterWidget(w *Widget) {
+	registeredWidgets = append(registeredWidgets, w)
+}
+
+func GetWidget(name string) (w Widget, err error) {
+	for _, w := range registeredWidgets {
+		if w.Name == name {
+			return *w, nil
+		}
+	}
+	return Widget{}, fmt.Errorf("Widget: failed to find widget %v", name)
+}
+
+func (w *Widget) Render() template.HTML {
+	return template.HTML("Hello")
 }

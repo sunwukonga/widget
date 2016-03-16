@@ -5,6 +5,9 @@ Page Builder - WIP
 ### Configuration
 
 ```go
+
+widget.Register(qorAdmin)
+
 RegisterViewPath "templates"
 
 RegisterWidget(layout.Widget{
