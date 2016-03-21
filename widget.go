@@ -3,7 +3,16 @@ package widget
 import (
 	"fmt"
 	"github.com/qor/admin"
+	"github.com/qor/qor"
 )
+
+type WidgetInstance struct {
+	Config *qor.Config
+}
+
+func New(config *qor.Config) *WidgetInstance {
+	return &WidgetInstance{Config: config}
+}
 
 type Widget struct {
 	Name     string
@@ -15,7 +24,7 @@ type Widget struct {
 var registeredWidgets []*Widget
 var viewPaths = []string{}
 
-func RegisterWidget(w *Widget) {
+func (widgetInstance *WidgetInstance) RegisterWidget(w *Widget) {
 	registeredWidgets = append(registeredWidgets, w)
 }
 

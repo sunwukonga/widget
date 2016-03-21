@@ -13,23 +13,23 @@ import (
 )
 
 // Render find a widget and render this widget
-func Render(key string, context Context, availableWidgets ...string) template.HTML {
+func (widgetInstance *WidgetInstance) Render(key string, context Context, availableWidgets ...string) template.HTML {
 	if len(availableWidgets) == 0 {
 		utils.ExitWithMsg("Widget Name can't be blank")
 	}
 	widgetName := availableWidgets[0]
 	widgetObj, _ := GetWidget(widgetName)
-	return widgetObj.Render(key, context)
+	setting := findSettingByNameAndKey(widgetInstance.Config.DB, widgetObj.Name, key)
+	settingValue := setting.GetSerializableArgument(setting)
+	newContext := widgetObj.Context(context, settingValue)
+	return widgetObj.Render(newContext)
 }
 
 // Render register widget itself content
-func (w *Widget) Render(key string, context Context) template.HTML {
+func (w *Widget) Render(context Context) template.HTML {
 	var err error
 	var result = bytes.NewBufferString("")
 	file := w.Template
-
-	setting := findSettingByNameAndKey(w.Name, key)
-	newContext := w.Context(context, setting)
 
 	defer func() {
 		if r := recover(); r != nil {
@@ -40,7 +40,7 @@ func (w *Widget) Render(key string, context Context) template.HTML {
 
 	if file, err = w.findTemplate(file + ".tmpl"); err == nil {
 		if tmpl, err := template.New(filepath.Base(file)).ParseFiles(file); err == nil {
-			if err = tmpl.Execute(result, newContext.Options); err == nil {
+			if err = tmpl.Execute(result, context.Options); err == nil {
 				return template.HTML(result.String())
 			}
 		}
@@ -50,7 +50,7 @@ func (w *Widget) Render(key string, context Context) template.HTML {
 }
 
 // RegisterViewPath register views directory
-func RegisterViewPath(p string) {
+func (widgetInstance *WidgetInstance) RegisterViewPath(p string) {
 	root, _ := os.Getwd()
 	if registerViewPath(path.Join(root, "vendor", p)) != nil {
 		for _, gopath := range strings.Split(os.Getenv("GOPATH"), ":") {
