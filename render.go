@@ -13,20 +13,23 @@ import (
 )
 
 // Render find a widget and render this widget
-func Render(name string, context *Context, availableWidgets ...string) template.HTML {
+func Render(key string, context Context, availableWidgets ...string) template.HTML {
 	if len(availableWidgets) == 0 {
 		utils.ExitWithMsg("Widget Name can't be blank")
 	}
 	widgetName := availableWidgets[0]
 	widgetObj, _ := GetWidget(widgetName)
-	return widgetObj.Render()
+	return widgetObj.Render(key, context)
 }
 
 // Render register widget itself content
-func (w *Widget) Render() template.HTML {
+func (w *Widget) Render(key string, context Context) template.HTML {
 	var err error
 	var result = bytes.NewBufferString("")
 	file := w.Template
+
+	setting := findSettingByNameAndKey(w.Name, key)
+	newContext := w.Context(context, setting)
 
 	defer func() {
 		if r := recover(); r != nil {
@@ -37,7 +40,7 @@ func (w *Widget) Render() template.HTML {
 
 	if file, err = w.findTemplate(file + ".tmpl"); err == nil {
 		if tmpl, err := template.New(filepath.Base(file)).ParseFiles(file); err == nil {
-			if err = tmpl.Execute(result, nil); err == nil {
+			if err = tmpl.Execute(result, newContext.Options); err == nil {
 				return template.HTML(result.String())
 			}
 		}
