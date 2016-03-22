@@ -13,7 +13,7 @@ import (
 )
 
 // Render find a widget and render this widget
-func (widgetInstance *WidgetInstance) Render(key string, context Context, availableWidgets ...string) template.HTML {
+func (widgetInstance *WidgetInstance) Render(key string, context *Context, availableWidgets ...string) template.HTML {
 	if len(availableWidgets) == 0 {
 		utils.ExitWithMsg("Widget Name can't be blank")
 	}
@@ -26,7 +26,7 @@ func (widgetInstance *WidgetInstance) Render(key string, context Context, availa
 }
 
 // Render register widget itself content
-func (w *Widget) Render(context Context) template.HTML {
+func (w *Widget) Render(context *Context) template.HTML {
 	var err error
 	var result = bytes.NewBufferString("")
 	file := w.Template
@@ -51,12 +51,9 @@ func (w *Widget) Render(context Context) template.HTML {
 
 // RegisterViewPath register views directory
 func (widgetInstance *WidgetInstance) RegisterViewPath(p string) {
-	root, _ := os.Getwd()
-	if registerViewPath(path.Join(root, "vendor", p)) != nil {
-		for _, gopath := range strings.Split(os.Getenv("GOPATH"), ":") {
-			if registerViewPath(path.Join(gopath, "src", p)) == nil {
-				return
-			}
+	for _, gopath := range strings.Split(os.Getenv("GOPATH"), ":") {
+		if registerViewPath(path.Join(gopath, "src", p)) == nil {
+			return
 		}
 	}
 }

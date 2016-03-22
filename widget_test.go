@@ -39,7 +39,7 @@ func TestRender(t *testing.T) {
 		Name:     "Banner",
 		Template: "banner",
 		Setting:  Admin.NewResource(&bannerArgument{}),
-		Context: func(context widget.Context, setting interface{}) widget.Context {
+		Context: func(context *widget.Context, setting interface{}) *widget.Context {
 			if setting != nil {
 				argument := setting.(*bannerArgument)
 				context.Options["Title"] = argument.Title
@@ -52,7 +52,7 @@ func TestRender(t *testing.T) {
 	widgetContext := widget.NewContext(map[string]interface{}{
 		"CurrentUser": "Qortex",
 	})
-	html := WidgetInstance.Render("HomeBanner", *widgetContext, "Banner")
+	html := WidgetInstance.Render("HomeBanner", widgetContext, "Banner")
 	if html != "Hello, Qortex\n<h1></h1>\n<h2></h2>\n" {
 		t.Errorf(color.RedString(fmt.Sprintf("\nWidget Render TestCase #%d: Failure Result:\n %s\n", 1, html)))
 	}
@@ -62,7 +62,7 @@ func TestRender(t *testing.T) {
 	setting.SetSerializableArgumentValue(&bannerArgument{Title: "Title", SubTitle: "SubTitle"})
 	db.Save(&setting)
 
-	html = WidgetInstance.Render("HomeBanner", *widgetContext, "Banner")
+	html = WidgetInstance.Render("HomeBanner", widgetContext, "Banner")
 	if html != "Hello, Qortex\n<h1>Title</h1>\n<h2>SubTitle</h2>\n" {
 		t.Errorf(color.RedString(fmt.Sprintf("\nWidget Render TestCase #%d: Failure Result:\n %s\n", 2, html)))
 	}

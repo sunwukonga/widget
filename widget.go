@@ -4,21 +4,36 @@ import (
 	"fmt"
 	"github.com/qor/admin"
 	"github.com/qor/qor"
+	"os"
+	"path"
+)
+
+var (
+	root, _ = os.Getwd()
 )
 
 type WidgetInstance struct {
 	Config *qor.Config
 }
 
+func init() {
+	if path := os.Getenv("WEB_ROOT"); path != "" {
+		root = path
+	}
+	registerViewPath(path.Join(root, "app/views/widgets"))
+}
+
 func New(config *qor.Config) *WidgetInstance {
-	return &WidgetInstance{Config: config}
+	isntance := &WidgetInstance{Config: config}
+	isntance.RegisterViewPath("app/views/widgets")
+	return isntance
 }
 
 type Widget struct {
 	Name     string
 	Template string
 	Setting  *admin.Resource
-	Context  func(context Context, setting interface{}) Context
+	Context  func(context *Context, setting interface{}) *Context
 }
 
 var registeredWidgets []*Widget
