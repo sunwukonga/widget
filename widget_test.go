@@ -23,7 +23,7 @@ func TestRender(t *testing.T) {
 	db.DropTable(&widget.QorWidgetSetting{})
 	db.AutoMigrate(&widget.QorWidgetSetting{})
 
-	WidgetInstance := widget.New(&qor.Config{
+	WidgetInstance := widget.New(&widget.Config{
 		DB: db,
 	})
 	WidgetInstance.RegisterViewPath("github.com/qor/widget/test")
