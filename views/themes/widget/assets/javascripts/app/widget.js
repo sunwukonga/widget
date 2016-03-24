@@ -17,7 +17,7 @@
   var EVENT_ENABLE = 'enable.' + NAMESPACE;
   var EVENT_DISABLE = 'disable.' + NAMESPACE;
   var EVENT_CLICK = 'click.' + NAMESPACE;
-  var EDIT_WIDGET_BUTTON = '.js-widget-button';
+  var EDIT_WIDGET_BUTTON = '.js-widget-button, .qor-slideout__close';
 
   function QorWidget(element, options) {
     this.$element = $(element);
@@ -48,6 +48,7 @@
 
       if ($target.is(EDIT_WIDGET_BUTTON)){
         $("#qor-widget-iframe").addClass("show");
+        $("#qor-widget-iframe").contents().find("html").addClass("show");
       }
     }
   };
@@ -81,6 +82,7 @@
     $("body").attr("data-toggle", "qor.widgets");
     window.closeWidgetEditBox = function () {
       $("#qor-widget-iframe").removeClass("show");
+      $("#qor-widget-iframe").contents().find("html").addClass("show");
     };
 
     var selector = '[data-toggle="qor.widgets"]';

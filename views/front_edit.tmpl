@@ -30,7 +30,12 @@
 
     <script type="text/javascript">
       $(document).ready(function(){
-        $(document).on("click", ".qor-button--cancel", function() {
+        window.onload = function() {
+          if($(parent.window.document).find("#qor-widget-iframe.show").get(0)) {
+            parent.window.location.reload();
+          }
+        };
+        $(document).on("click", ".qor-button--cancel, .qor-slideout__close", function() {
           setTimeout(function() {
             parent.window.closeWidgetEditBox();
           }, 500);
