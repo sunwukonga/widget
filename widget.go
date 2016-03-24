@@ -7,20 +7,25 @@ import (
 	"github.com/qor/qor/resource"
 	"os"
 	"path"
+	"strings"
 )
 
 var (
 	root, _ = os.Getwd()
 )
+var registeredWidgets []*Widget
+var viewPaths = []string{}
 
 type Config struct {
 	DB    *gorm.DB
 	Admin *admin.Admin
 }
 
-type WidgetInstance struct {
-	Config          *Config
-	SettingResource *admin.Resource
+func init() {
+	if path := os.Getenv("WEB_ROOT"); path != "" {
+		root = path
+	}
+	registerViewPath(path.Join(root, "app/views/widgets"))
 }
 
 // ConfigureQorResource a method used to config Widget for qor admin
@@ -33,23 +38,26 @@ func (w *WidgetInstance) ConfigureQorResource(res resource.Resourcer) {
 		w.SettingResource.Name = res.Name
 		controller := widgetController{WidgetInstance: w}
 		router.Get(res.ToParam(), controller.Index)
+		router.Get(fmt.Sprintf("%v/frontend-edit", res.ToParam()), controller.FronendEdit)
 		router.Get(fmt.Sprintf("%v/%v", res.ToParam(), res.ParamIDName()), controller.Edit)
 		router.Get(fmt.Sprintf("%v/%v/edit", res.ToParam(), res.ParamIDName()), controller.Edit)
 		router.Put(fmt.Sprintf("%v/%v", res.ToParam(), res.ParamIDName()), controller.Update)
 	}
 }
 
-func init() {
-	if path := os.Getenv("WEB_ROOT"); path != "" {
-		root = path
-	}
-	registerViewPath(path.Join(root, "app/views/widgets"))
+type WidgetInstance struct {
+	Config          *Config
+	SettingResource *admin.Resource
 }
 
 func New(config *Config) *WidgetInstance {
 	instance := &WidgetInstance{Config: config}
 	instance.RegisterViewPath("app/views/widgets")
 	return instance
+}
+
+func (widgetInstance *WidgetInstance) RegisterWidget(w *Widget) {
+	registeredWidgets = append(registeredWidgets, w)
 }
 
 type Widget struct {
@@ -59,11 +67,8 @@ type Widget struct {
 	Context  func(context *Context, setting interface{}) *Context
 }
 
-var registeredWidgets []*Widget
-var viewPaths = []string{}
-
-func (widgetInstance *WidgetInstance) RegisterWidget(w *Widget) {
-	registeredWidgets = append(registeredWidgets, w)
+func (w *Widget) nameForClass() string {
+	return strings.ToLower(strings.Replace(w.Name, " ", "-", -1))
 }
 
 func GetWidget(name string) (w Widget, err error) {

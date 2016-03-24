@@ -41,7 +41,7 @@ func (w *Widget) Render(context *Context) template.HTML {
 	if file, err = w.findTemplate(file + ".tmpl"); err == nil {
 		if tmpl, err := template.New(filepath.Base(file)).ParseFiles(file); err == nil {
 			if err = tmpl.Execute(result, context.Options); err == nil {
-				return template.HTML(result.String())
+				return template.HTML(fmt.Sprintf("<div class=\"qor-widget qor-widget-%v\">\n%v\n</div>", w.nameForClass(), result.String()))
 			}
 		}
 	}
