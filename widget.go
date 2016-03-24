@@ -64,7 +64,7 @@ func (widgetInstance *WidgetInstance) RegisterWidget(w *Widget) {
 }
 
 func (widgetInstance *WidgetInstance) IncludeAssetTag() template.HTML {
-	return "<script src=\"/admin/assets/javascripts/widget.js?theme=widget\"></script>"
+	return "<script src=\"/admin/assets/javascripts/widget.js?theme=widget\"></script><link type=\"text/css\" rel=\"stylesheet\" href=\"/admin/assets/stylesheets/widget.css?theme=widget\">"
 }
 
 type Widget struct {

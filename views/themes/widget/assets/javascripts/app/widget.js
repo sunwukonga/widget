@@ -1,29 +1,98 @@
-window.closeWidgetEditBox = function () {
-  $("iframe").css({ position : "fixed", width : "1", height: "1" });
-};
+(function (factory) {
+  if (typeof define === 'function' && define.amd) {
+    // AMD. Register as anonymous module.
+    define(['jquery'], factory);
+  } else if (typeof exports === 'object') {
+    // Node / CommonJS
+    factory(require('jquery'));
+  } else {
+    // Browser globals.
+    factory(jQuery);
+  }
+})(function ($) {
 
-$(document).ready(function () {
-  qorWidget = {
-    init : function () {
-      this.bindingEvents();
+  'use strict';
+
+  var NAMESPACE = 'qor.widget';
+  var EVENT_ENABLE = 'enable.' + NAMESPACE;
+  var EVENT_DISABLE = 'disable.' + NAMESPACE;
+  var EVENT_CLICK = 'click.' + NAMESPACE;
+  var EDIT_WIDGET_BUTTON = '.js-widget-button';
+
+  function QorWidget(element, options) {
+    this.$element = $(element);
+    this.options = $.extend({}, QorWidget.DEFAULTS, $.isPlainObject(options) && options);
+    this.init();
+  }
+
+  QorWidget.prototype = {
+    constructor: QorWidget,
+
+    init: function () {
+      var $this = this.$element;
+      this.bind();
       this.initStatus();
     },
 
-    bindingEvents : function () {
-      $(".js-widget-button").click(this.openEditBox);
+    bind: function () {
+      this.$element.on(EVENT_CLICK, $.proxy(this.click, this));
     },
 
     initStatus : function () {
-      this.addIframe();
+      $("body").append('<iframe id="qor-widget-iframe" src="/admin/widget_instances/frontend-edit"></iframe>');
     },
 
-    openEditBox : function () {
-      $("iframe").css({ position : "fixed", width : "100%", height: "100000px", "top" : 0, "left" : 0, "z-index" : 999, "background-color" : "rgba(0, 0, 0, 0.5)" });
-    },
+    click: function (e) {
+      var $target = $(e.target);
+      e.stopPropagation();
 
-    addIframe : function () {
-      $("body").append('<iframe src="/admin/widget_instances/frontend-edit" width="1" height="1" style="background-color:transparent;border: none;"></iframe>');
+      if ($target.is(EDIT_WIDGET_BUTTON)){
+        $("#qor-widget-iframe").addClass("show");
+      }
     }
   };
-  qorWidget.init();
+
+  QorWidget.plugin = function (options) {
+    return this.each(function () {
+      var $this = $(this);
+      var data = $this.data(NAMESPACE);
+      var fn;
+
+      if (!data) {
+
+        if (/destroy/.test(options)) {
+          return;
+        }
+
+        $this.data(NAMESPACE, (data = new QorWidget(this, options)));
+      }
+
+      if (typeof options === 'string' && $.isFunction(fn = data[options])) {
+        fn.apply(data);
+      }
+    });
+  };
+
+  QorWidget.isScrollToBottom = function (element) {
+    return element.clientHeight + element.scrollTop === element.scrollHeight;
+  };
+
+  $(function () {
+    $("body").attr("data-toggle", "qor.widgets");
+    window.closeWidgetEditBox = function () {
+      $("#qor-widget-iframe").removeClass("show");
+    };
+
+    var selector = '[data-toggle="qor.widgets"]';
+    $(document).
+      on(EVENT_DISABLE, function (e) {
+        QorWidget.plugin.call($(selector, e.target), 'destroy');
+      }).
+      on(EVENT_ENABLE, function (e) {
+        QorWidget.plugin.call($(selector, e.target));
+      }).
+      triggerHandler(EVENT_ENABLE);
+  });
+
+  return QorWidget;
 });
