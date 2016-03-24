@@ -5,6 +5,7 @@ import (
 	"github.com/jinzhu/gorm"
 	"github.com/qor/admin"
 	"github.com/qor/qor/resource"
+	"html/template"
 	"os"
 	"path"
 	"strings"
@@ -31,6 +32,8 @@ func init() {
 // ConfigureQorResource a method used to config Widget for qor admin
 func (w *WidgetInstance) ConfigureQorResource(res resource.Resourcer) {
 	if res, ok := res.(*admin.Resource); ok {
+		admin.RegisterViewPath("github.com/qor/widget/views")
+
 		// configure routes
 		router := res.GetAdmin().GetRouter()
 		w.SettingResource = res.GetAdmin().NewResource(&QorWidgetSetting{})
@@ -58,6 +61,10 @@ func New(config *Config) *WidgetInstance {
 
 func (widgetInstance *WidgetInstance) RegisterWidget(w *Widget) {
 	registeredWidgets = append(registeredWidgets, w)
+}
+
+func (widgetInstance *WidgetInstance) IncludeAssetTag() template.HTML {
+	return "<script src=\"/admin/assets/javascripts/widget.js?theme=widget\"></script>"
 }
 
 type Widget struct {

@@ -52,6 +52,5 @@ func (wc widgetController) Update(context *admin.Context) {
 }
 
 func (wc widgetController) FronendEdit(context *admin.Context) {
-	admin.RegisterViewPath("github.com/qor/widget/views")
 	context.Writer.Write([]byte(context.Render("front_edit")))
 }
