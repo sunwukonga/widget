@@ -22,11 +22,17 @@ func (widgetInstance *WidgetInstance) Render(key string, context *Context, avail
 	setting := findSettingByNameAndKey(widgetInstance.Config.DB, widgetObj.Name, key)
 	settingValue := setting.GetSerializableArgument(setting)
 	newContext := widgetObj.Context(context, settingValue)
-	return widgetObj.Render(newContext)
+	url := widgetInstance.settingEditURL(setting)
+	return widgetObj.Render(newContext, url)
+}
+
+func (widgetInstance *WidgetInstance) settingEditURL(setting *QorWidgetSetting) string {
+	prefix := widgetInstance.SettingResource.GetAdmin().GetRouter().Prefix
+	return fmt.Sprintf("%v/%v/%v/edit", prefix, widgetInstance.SettingResource.ToParam(), setting.ID)
 }
 
 // Render register widget itself content
-func (w *Widget) Render(context *Context) template.HTML {
+func (w *Widget) Render(context *Context, url string) template.HTML {
 	var err error
 	var result = bytes.NewBufferString("")
 	file := w.Template
@@ -41,7 +47,7 @@ func (w *Widget) Render(context *Context) template.HTML {
 	if file, err = w.findTemplate(file + ".tmpl"); err == nil {
 		if tmpl, err := template.New(filepath.Base(file)).ParseFiles(file); err == nil {
 			if err = tmpl.Execute(result, context.Options); err == nil {
-				return template.HTML(fmt.Sprintf("<div class=\"qor-widget qor-widget-%v\">\n%v\n</div>", w.nameForClass(), result.String()))
+				return template.HTML(fmt.Sprintf("<div class=\"qor-widget qor-widget-%v\" data-url=\"%v\">\n%v\n</div>", w.nameForClass(), url, result.String()))
 			}
 		}
 	}

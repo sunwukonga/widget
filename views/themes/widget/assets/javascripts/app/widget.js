@@ -80,6 +80,9 @@
 
   $(function () {
     $("body").attr("data-toggle", "qor.widgets");
+    $(".qor-widget").each(function (i, e) {
+      $(e).append('<button data-url=\"' + $(e).data("url") + '\" class="js-widget-button">Edit Widget</button>');
+    });
     window.closeWidgetEditBox = function () {
       $("#qor-widget-iframe").removeClass("show");
       $("#qor-widget-iframe")[0].contentWindow.location.reload();
