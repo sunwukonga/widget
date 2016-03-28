@@ -21,7 +21,7 @@
   </head>
 
   <body class="qor-theme-slideout" style="background-color: rgba(0, 0, 0, 0.5);border:none;">
-    <a style="display:none;" data-url="/admin/widget_instances/1/edit" class="js-widget-edit-link">Edit Widget</a>
+    <a style="display:none;" class="js-widget-edit-link">Edit Widget</a>
 
     <!-- JavaScripts -->
     {{javascript_tag "vendors" "qor" "app"}}
@@ -31,6 +31,7 @@
     <script type="text/javascript">
       $(document).ready(function(){
         window.onload = function() {
+          // Reload parent window when click Save
           if($(parent.window.document).find("#qor-widget-iframe.show").get(0)) {
             parent.window.location.reload();
           }
@@ -40,6 +41,7 @@
             parent.window.closeWidgetEditBox();
           }, 500);
         });
+        // Auto Open Slideout when iframe was load
         $(window).resize(function() {
           $(".js-widget-edit-link").click();
         });

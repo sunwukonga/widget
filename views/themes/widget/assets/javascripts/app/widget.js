@@ -47,8 +47,8 @@
       e.stopPropagation();
 
       if ($target.is(EDIT_WIDGET_BUTTON)){
+        $("#qor-widget-iframe").contents().find(".js-widget-edit-link").attr("data-url", $target.data("url"));
         $("#qor-widget-iframe").addClass("show");
-        $("#qor-widget-iframe").contents().find("html").addClass("show");
       }
     }
   };
@@ -82,7 +82,6 @@
     $("body").attr("data-toggle", "qor.widgets");
     window.closeWidgetEditBox = function () {
       $("#qor-widget-iframe").removeClass("show");
-      $("#qor-widget-iframe").contents().find("html").addClass("show");
     };
 
     var selector = '[data-toggle="qor.widgets"]';
