@@ -5,17 +5,16 @@ import (
 	"github.com/jinzhu/gorm"
 	"github.com/qor/admin"
 	"github.com/qor/qor/resource"
-	"html/template"
 	"os"
 	"path"
 	"strings"
 )
 
 var (
-	root, _ = os.Getwd()
+	root, _   = os.Getwd()
+	viewPaths = []string{}
 )
 var registeredWidgets []*Widget
-var viewPaths = []string{}
 
 type Config struct {
 	DB    *gorm.DB
@@ -61,10 +60,6 @@ func New(config *Config) *WidgetInstance {
 
 func (widgetInstance *WidgetInstance) RegisterWidget(w *Widget) {
 	registeredWidgets = append(registeredWidgets, w)
-}
-
-func (widgetInstance *WidgetInstance) IncludeAssetTag() template.HTML {
-	return "<script src=\"/admin/assets/javascripts/widget.js?theme=widget\"></script><link type=\"text/css\" rel=\"stylesheet\" href=\"/admin/assets/stylesheets/widget.css?theme=widget\">"
 }
 
 type Widget struct {

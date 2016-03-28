@@ -23,7 +23,9 @@ func (widgetInstance *WidgetInstance) Render(key string, context *Context, avail
 	settingValue := setting.GetSerializableArgument(setting)
 	newContext := widgetObj.Context(context, settingValue)
 	url := widgetInstance.settingEditURL(setting)
-	return widgetObj.Render(newContext, url)
+
+	assets_tag := "<script src=\"/admin/assets/javascripts/widget_check.js?theme=widget\"></script>"
+	return template.HTML(fmt.Sprintf("%v\n%v", assets_tag, widgetObj.Render(newContext, url)))
 }
 
 func (widgetInstance *WidgetInstance) settingEditURL(setting *QorWidgetSetting) string {
