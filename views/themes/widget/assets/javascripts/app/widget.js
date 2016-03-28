@@ -82,6 +82,7 @@
     $("body").attr("data-toggle", "qor.widgets");
     window.closeWidgetEditBox = function () {
       $("#qor-widget-iframe").removeClass("show");
+      $("#qor-widget-iframe")[0].contentWindow.location.reload();
     };
 
     var selector = '[data-toggle="qor.widgets"]';
