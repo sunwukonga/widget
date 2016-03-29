@@ -17,7 +17,7 @@
   var EVENT_ENABLE = 'enable.' + NAMESPACE;
   var EVENT_DISABLE = 'disable.' + NAMESPACE;
   var EVENT_CLICK = 'click.' + NAMESPACE;
-  var EDIT_WIDGET_BUTTON = '.js-widget-button, .qor-slideout__close';
+  var EDIT_WIDGET_BUTTON = '.qor-widget-button, .qor-slideout__close';
 
   function QorWidget(element, options) {
     this.$element = $(element);
@@ -80,11 +80,10 @@
 
   $(function () {
     $("body").attr("data-toggle", "qor.widgets");
-    var btnCss = 'style="background-color: rgb(33,150,243); color: white; border: none; box-shadow: 0 2px 2px 0 rgba(0,0,0,.14),0 3px 1px -2px rgba(0,0,0,.2),0 1px 5px 0 rgba(0,0,0,.12); padding: 6px 16px; display: inline-block; font-family: "Roboto","Helvetica","Arial",sans-serif; font-size: 14px; font-weight: 500;"';
     $(".qor-widget").each(function (i, e) {
       var $wrap = $(e).find("*").eq(0);
       $wrap.css("position", "relative").addClass("qor-widget").attr("data-url", $(e).data("url")).unwrap();
-      $wrap.append('<div style="position: absolute; top: 8px; right: 8px;" class="qor-widget-embed-wrapper"><button ' + btnCss + ' data-url=\"' + $(e).data("url") + '\" class="js-widget-button">Edit Widget</button></div>');
+      $wrap.append('<div class="qor-widget-embed-wrapper"><button data-url=\"' + $(e).data("url") + '\" class="qor-widget-button">Edit</button></div>');
     });
     window.closeWidgetEditBox = function () {
       $("#qor-widget-iframe").removeClass("show");
