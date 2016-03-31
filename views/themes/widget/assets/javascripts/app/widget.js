@@ -49,6 +49,7 @@
       if ($target.is(EDIT_WIDGET_BUTTON)){
         $("#qor-widget-iframe").contents().find(".js-widget-edit-link").attr("data-url", $target.data("url"));
         $("#qor-widget-iframe").addClass("show");
+        $("body").addClass("open-widget-editor");
       }
     }
   };
@@ -88,6 +89,7 @@
     window.closeWidgetEditBox = function () {
       $("#qor-widget-iframe").removeClass("show");
       $("#qor-widget-iframe")[0].contentWindow.location.reload();
+      $("body").removeClass("open-widget-editor");
     };
 
     var selector = '[data-toggle="qor.widgets"]';
