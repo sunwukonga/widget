@@ -17,6 +17,9 @@ func (widgetInstance *WidgetInstance) Render(key string, context *Context, avail
 	if len(availableWidgets) == 0 {
 		utils.ExitWithMsg("Widget Name can't be blank")
 	}
+	if context == nil {
+		context = NewContext(map[string]interface{}{})
+	}
 	widgetName := availableWidgets[0]
 	widgetObj, _ := GetWidget(widgetName)
 	setting := findSettingByNameAndKey(widgetInstance.Config.DB, widgetObj.Name, key)

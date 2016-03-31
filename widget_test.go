@@ -53,12 +53,17 @@ func TestRender(t *testing.T) {
 		},
 	})
 
+	html := WidgetInstance.Render("HomeBanner", nil, "Banner")
+	if !strings.Contains(string(html), "Hello, \n<h1></h1>\n<h2></h2>\n") {
+		t.Errorf(color.RedString(fmt.Sprintf("\nWidget Render TestCase #%d: Failure Result:\n %s\n", 1, html)))
+	}
+
 	widgetContext := widget.NewContext(map[string]interface{}{
 		"CurrentUser": "Qortex",
 	})
-	html := WidgetInstance.Render("HomeBanner", widgetContext, "Banner")
+	html = WidgetInstance.Render("HomeBanner", widgetContext, "Banner")
 	if !strings.Contains(string(html), "Hello, Qortex\n<h1></h1>\n<h2></h2>\n") {
-		t.Errorf(color.RedString(fmt.Sprintf("\nWidget Render TestCase #%d: Failure Result:\n %s\n", 1, html)))
+		t.Errorf(color.RedString(fmt.Sprintf("\nWidget Render TestCase #%d: Failure Result:\n %s\n", 2, html)))
 	}
 
 	setting := widget.QorWidgetSetting{}
@@ -68,6 +73,6 @@ func TestRender(t *testing.T) {
 
 	html = WidgetInstance.Render("HomeBanner", widgetContext, "Banner")
 	if !strings.Contains(string(html), "Hello, Qortex\n<h1>Title</h1>\n<h2>SubTitle</h2>\n") {
-		t.Errorf(color.RedString(fmt.Sprintf("\nWidget Render TestCase #%d: Failure Result:\n %s\n", 2, html)))
+		t.Errorf(color.RedString(fmt.Sprintf("\nWidget Render TestCase #%d: Failure Result:\n %s\n", 3, html)))
 	}
 }
