@@ -10,6 +10,8 @@ import (
 	"github.com/qor/qor"
 	"github.com/qor/qor/test/utils"
 	"github.com/qor/widget"
+	"net/http"
+	"strings"
 )
 
 var db *gorm.DB
@@ -29,6 +31,8 @@ func TestRender(t *testing.T) {
 	WidgetInstance.RegisterViewPath("github.com/qor/widget/test")
 
 	Admin := admin.New(&qor.Config{DB: db})
+	Admin.AddResource(WidgetInstance)
+	Admin.MountTo("/admin", http.NewServeMux())
 
 	type bannerArgument struct {
 		Title    string
@@ -53,7 +57,7 @@ func TestRender(t *testing.T) {
 		"CurrentUser": "Qortex",
 	})
 	html := WidgetInstance.Render("HomeBanner", widgetContext, "Banner")
-	if html != "Hello, Qortex\n<h1></h1>\n<h2></h2>\n" {
+	if !strings.Contains(string(html), "Hello, Qortex\n<h1></h1>\n<h2></h2>\n") {
 		t.Errorf(color.RedString(fmt.Sprintf("\nWidget Render TestCase #%d: Failure Result:\n %s\n", 1, html)))
 	}
 
@@ -63,7 +67,7 @@ func TestRender(t *testing.T) {
 	db.Save(&setting)
 
 	html = WidgetInstance.Render("HomeBanner", widgetContext, "Banner")
-	if html != "Hello, Qortex\n<h1>Title</h1>\n<h2>SubTitle</h2>\n" {
+	if !strings.Contains(string(html), "Hello, Qortex\n<h1>Title</h1>\n<h2>SubTitle</h2>\n") {
 		t.Errorf(color.RedString(fmt.Sprintf("\nWidget Render TestCase #%d: Failure Result:\n %s\n", 2, html)))
 	}
 }
