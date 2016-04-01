@@ -37,6 +37,17 @@ func (widgetInstance *WidgetInstance) settingEditURL(setting *QorWidgetSetting) 
 	return fmt.Sprintf("%v/%v/%v/edit", prefix, widgetInstance.SettingResource.ToParam(), setting.ID)
 }
 
+// Function map
+func (widgetInstance *WidgetInstance) FuncMap() template.FuncMap {
+	funcMap := template.FuncMap{}
+
+	funcMap["render_widget"] = func(key string, context *Context, availableWidgets ...string) template.HTML {
+		return widgetInstance.Render(key, context, availableWidgets...)
+	}
+
+	return funcMap
+}
+
 // Render register widget itself content
 func (w *Widget) Render(context *Context, url string) template.HTML {
 	var err error
