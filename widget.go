@@ -2,12 +2,13 @@ package widget
 
 import (
 	"fmt"
-	"github.com/jinzhu/gorm"
-	"github.com/qor/admin"
-	"github.com/qor/qor/resource"
 	"os"
 	"path"
 	"strings"
+
+	"github.com/jinzhu/gorm"
+	"github.com/qor/admin"
+	"github.com/qor/qor/resource"
 )
 
 var (
@@ -36,7 +37,7 @@ func (w *WidgetInstance) ConfigureQorResource(res resource.Resourcer) {
 		// configure routes
 		router := res.GetAdmin().GetRouter()
 		w.SettingResource = res.GetAdmin().NewResource(&QorWidgetSetting{})
-		w.SettingResource.IndexAttrs("ID", "Kind", "Key")
+		w.SettingResource.IndexAttrs("ID", "Kind", "Name")
 		w.SettingResource.Name = res.Name
 		controller := widgetController{WidgetInstance: w}
 		router.Get(res.ToParam(), controller.Index)
@@ -73,11 +74,11 @@ func (w *Widget) nameForClass() string {
 	return strings.ToLower(strings.Replace(w.Name, " ", "-", -1))
 }
 
-func GetWidget(name string) (w Widget, err error) {
+func GetWidget(name string) *Widget {
 	for _, w := range registeredWidgets {
 		if w.Name == name {
-			return *w, nil
+			return w
 		}
 	}
-	return Widget{}, fmt.Errorf("Widget: failed to find widget %v", name)
+	return nil
 }

@@ -4,25 +4,26 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"github.com/qor/qor/utils"
 	"html/template"
 	"os"
 	"path"
 	"path/filepath"
 	"strings"
+
+	"github.com/qor/qor/utils"
 )
 
 // Render find a widget and render this widget
-func (widgetInstance *WidgetInstance) Render(key string, context *Context, availableWidgets ...string) template.HTML {
-	if len(availableWidgets) == 0 {
-		utils.ExitWithMsg("Widget Name can't be blank")
-	}
+func (widgetInstance *WidgetInstance) Render(widgetName string, context *Context, availableWidgets ...string) template.HTML {
 	if context == nil {
 		context = NewContext(map[string]interface{}{})
 	}
-	widgetName := availableWidgets[0]
-	widgetObj, _ := GetWidget(widgetName)
-	setting := findSettingByNameAndKey(widgetInstance.Config.DB, widgetObj.Name, key)
+	if len(availableWidgets) == 0 {
+		availableWidgets = append(availableWidgets, widgetName)
+	}
+
+	setting := findSettingByNameAndKinds(widgetInstance.Config.DB, widgetName, availableWidgets)
+	widgetObj := GetWidget(setting.Kind)
 	settingValue := setting.GetSerializableArgument(setting)
 	newContext := widgetObj.Context(context, settingValue)
 	url := widgetInstance.settingEditURL(setting)

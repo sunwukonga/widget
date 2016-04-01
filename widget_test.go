@@ -4,14 +4,15 @@ import (
 	"fmt"
 	"testing"
 
+	"net/http"
+	"strings"
+
 	"github.com/fatih/color"
 	"github.com/jinzhu/gorm"
 	"github.com/qor/admin"
 	"github.com/qor/qor"
 	"github.com/qor/qor/test/utils"
 	"github.com/qor/widget"
-	"net/http"
-	"strings"
 )
 
 var db *gorm.DB
@@ -67,7 +68,7 @@ func TestRender(t *testing.T) {
 	}
 
 	setting := widget.QorWidgetSetting{}
-	db.Where("`key` = ? AND kind = ?", "HomeBanner", "Banner").First(&setting)
+	db.Where("name = ? AND kind = ?", "HomeBanner", "Banner").First(&setting)
 	setting.SetSerializableArgumentValue(&bannerArgument{Title: "Title", SubTitle: "SubTitle"})
 	db.Save(&setting)
 

@@ -9,15 +9,15 @@ import (
 type QorWidgetSetting struct {
 	gorm.Model
 	Scope string
-	Key   string
+	Name  string
 	serializable_meta.SerializableMeta
 }
 
-func findSettingByNameAndKey(db *gorm.DB, kind string, key string) *QorWidgetSetting {
+func findSettingByNameAndKinds(db *gorm.DB, name string, kinds []string) *QorWidgetSetting {
 	setting := QorWidgetSetting{}
-	if db.Where("`key` = ? AND kind = ?", key, kind).First(&setting).RecordNotFound() {
-		setting.Key = key
-		setting.Kind = kind
+	if db.Where("name = ? AND kind IN (?)", name, kinds).First(&setting).RecordNotFound() {
+		setting.Name = name
+		setting.Kind = kinds[0]
 		db.Save(&setting)
 	}
 	return &setting
@@ -25,6 +25,5 @@ func findSettingByNameAndKey(db *gorm.DB, kind string, key string) *QorWidgetSet
 
 // GetSerializableArgumentResource get setting's argument's resource
 func (setting *QorWidgetSetting) GetSerializableArgumentResource() *admin.Resource {
-	widget, _ := GetWidget(setting.Kind)
-	return widget.Setting
+	return GetWidget(setting.Kind).Setting
 }
