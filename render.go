@@ -24,16 +24,15 @@ func (widgets *Widgets) Render(widgetName string, context *Context, availableWid
 	}
 
 	var (
-		setting          = findSettingByNameAndKinds(widgets.Config.DB, widgetName, availableWidgets)
-		widgetObj        = GetWidget(setting.Kind)
-		settingValue     = setting.GetSerializableArgument(setting)
-		newContext       = widgetObj.Context(context, settingValue)
-		url              = widgets.settingEditURL(setting)
-		prefix           = widgets.Resource.GetAdmin().GetRouter().Prefix
-		loadWidgetScript = fmt.Sprintf("<script data-prefix=\"%v\" src=\"%v/assets/javascripts/widget_check.js?theme=widget\"></script>", prefix, prefix)
+		setting      = findSettingByNameAndKinds(widgets.Config.DB, widgetName, availableWidgets)
+		widgetObj    = GetWidget(setting.Kind)
+		settingValue = setting.GetSerializableArgument(setting)
+		newContext   = widgetObj.Context(context, settingValue)
+		url          = widgets.settingEditURL(setting)
+		prefix       = widgets.Resource.GetAdmin().GetRouter().Prefix
 	)
 
-	return template.HTML(fmt.Sprintf("%v\n%v", loadWidgetScript, widgetObj.Render(newContext, url)))
+	return template.HTML(fmt.Sprintf("<div class=\"qor-widget qor-widget-%v\" data-widget-frontend-edit-url=\"%v\" data-url=\"%v\">\n%v\n</div>", utils.ToParamString(w.Name), "/admin/widgets/frontend-edit", url, widgetObj.Render(newContext, url)))
 }
 
 func (widgets *Widgets) settingEditURL(setting *QorWidgetSetting) string {
@@ -68,7 +67,7 @@ func (w *Widget) Render(context *Context, url string) template.HTML {
 	if file, err = w.findTemplate(file + ".tmpl"); err == nil {
 		if tmpl, err := template.New(filepath.Base(file)).ParseFiles(file); err == nil {
 			if err = tmpl.Execute(result, context.Options); err == nil {
-				return template.HTML(fmt.Sprintf("<div class=\"qor-widget qor-widget-%v\" data-widget-frontend-edit-url=\"%v\" data-url=\"%v\">\n%v\n</div>", utils.ToParamString(w.Name), "/admin/widgets/frontend-edit", url, result.String()))
+				return template.HTML(result.String())
 			}
 		}
 	}
