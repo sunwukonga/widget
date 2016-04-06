@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"os"
 	"path"
-	"strings"
 
 	"github.com/jinzhu/gorm"
 	"github.com/qor/admin"
 	"github.com/qor/qor/resource"
+	"github.com/qor/roles"
 )
 
 var (
@@ -36,8 +36,8 @@ func New(config *Config) *Widgets {
 }
 
 type Widgets struct {
-	Config          *Config
-	SettingResource *admin.Resource
+	Config                *Config
+	WidgetSettingResource *admin.Resource
 }
 
 // ConfigureQorResource a method used to config Widget for qor admin
@@ -48,9 +48,12 @@ func (widgets *Widgets) ConfigureQorResource(res resource.Resourcer) {
 
 		res.Name = "Widget"
 
-		widgets.SettingResource = res.GetAdmin().NewResource(&QorWidgetSetting{})
-		widgets.SettingResource.IndexAttrs("ID", "Kind", "Name")
-		widgets.SettingResource.Name = res.Name
+		// set setting resource
+		if widgets.WidgetSettingResource == nil {
+			widgets.WidgetSettingResource = res.GetAdmin().NewResource(&QorWidgetSetting{}, &admin.Config{Permission: roles.Deny(roles.Create, roles.Anyone)})
+			widgets.WidgetSettingResource.IndexAttrs("ID", "Kind", "Name")
+			widgets.WidgetSettingResource.Name = res.Name
+		}
 
 		// configure routes
 		controller := widgetController{Widgets: widgets}
@@ -72,10 +75,6 @@ type Widget struct {
 	Template string
 	Setting  *admin.Resource
 	Context  func(context *Context, setting interface{}) *Context
-}
-
-func (w *Widget) nameForClass() string {
-	return strings.ToLower(strings.Replace(w.Name, " ", "-", -1))
 }
 
 func GetWidget(name string) *Widget {
