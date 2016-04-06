@@ -18,6 +18,7 @@
   var EVENT_DISABLE = 'disable.' + NAMESPACE;
   var EVENT_CLICK = 'click.' + NAMESPACE;
   var EDIT_WIDGET_BUTTON = '.qor-widget-button, .qor-slideout__close';
+  var FRONTEND_EDIT_URL = "";
 
   function QorWidget(element, options) {
     this.$element = $(element);
@@ -39,7 +40,7 @@
     },
 
     initStatus : function () {
-      $("body").append('<iframe id="qor-widget-iframe" src="/admin/widget_instances/frontend-edit"></iframe>');
+      $("body").append('<iframe id="qor-widget-iframe" src="' + FRONTEND_EDIT_URL + '"></iframe>');
     },
 
     click: function (e) {
@@ -83,6 +84,7 @@
     $("body").attr("data-toggle", "qor.widgets");
     $(".qor-widget").each(function (i, e) {
       var $wrap = $(e).find("*").eq(0);
+      FRONTEND_EDIT_URL = $(e).data("widget-frontend-edit-url");
       $wrap.css("position", "relative").addClass("qor-widget").attr("data-url", $(e).data("url")).unwrap();
       $wrap.append('<div class="qor-widget-embed-wrapper"><button data-url=\"' + $(e).data("url") + '\" class="qor-widget-button">Edit</button></div>');
     });

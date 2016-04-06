@@ -37,6 +37,7 @@ func New(config *Config) *Widgets {
 
 type Widgets struct {
 	Config                *Config
+	Resource              *admin.Resource
 	WidgetSettingResource *admin.Resource
 }
 
@@ -46,7 +47,9 @@ func (widgets *Widgets) ConfigureQorResource(res resource.Resourcer) {
 		// register view paths
 		admin.RegisterViewPath("github.com/qor/widget/views")
 
+		// set resources
 		res.Name = "Widget"
+		widgets.Resource = res
 
 		// set setting resource
 		if widgets.WidgetSettingResource == nil {

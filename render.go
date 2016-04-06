@@ -14,35 +14,39 @@ import (
 )
 
 // Render find a widget and render this widget
-func (widgetInstance *Widgets) Render(widgetName string, context *Context, availableWidgets ...string) template.HTML {
+func (widgets *Widgets) Render(widgetName string, context *Context, availableWidgets ...string) template.HTML {
 	if context == nil {
 		context = NewContext(map[string]interface{}{})
 	}
+
 	if len(availableWidgets) == 0 {
 		availableWidgets = append(availableWidgets, widgetName)
 	}
 
-	setting := findSettingByNameAndKinds(widgetInstance.Config.DB, widgetName, availableWidgets)
-	widgetObj := GetWidget(setting.Kind)
-	settingValue := setting.GetSerializableArgument(setting)
-	newContext := widgetObj.Context(context, settingValue)
-	url := widgetInstance.settingEditURL(setting)
+	var (
+		setting          = findSettingByNameAndKinds(widgets.Config.DB, widgetName, availableWidgets)
+		widgetObj        = GetWidget(setting.Kind)
+		settingValue     = setting.GetSerializableArgument(setting)
+		newContext       = widgetObj.Context(context, settingValue)
+		url              = widgets.settingEditURL(setting)
+		prefix           = widgets.Resource.GetAdmin().GetRouter().Prefix
+		loadWidgetScript = fmt.Sprintf("<script data-prefix=\"%v\" src=\"%v/assets/javascripts/widget_check.js?theme=widget\"></script>", prefix, prefix)
+	)
 
-	assets_tag := "<script src=\"/admin/assets/javascripts/widget_check.js?theme=widget\"></script>"
-	return template.HTML(fmt.Sprintf("%v\n%v", assets_tag, widgetObj.Render(newContext, url)))
+	return template.HTML(fmt.Sprintf("%v\n%v", loadWidgetScript, widgetObj.Render(newContext, url)))
 }
 
-func (widgetInstance *Widgets) settingEditURL(setting *QorWidgetSetting) string {
-	prefix := widgetInstance.WidgetSettingResource.GetAdmin().GetRouter().Prefix
-	return fmt.Sprintf("%v/%v/%v/edit", prefix, widgetInstance.WidgetSettingResource.ToParam(), setting.ID)
+func (widgets *Widgets) settingEditURL(setting *QorWidgetSetting) string {
+	prefix := widgets.WidgetSettingResource.GetAdmin().GetRouter().Prefix
+	return fmt.Sprintf("%v/%v/%v/edit", prefix, widgets.WidgetSettingResource.ToParam(), setting.ID)
 }
 
 // Function map
-func (widgetInstance *Widgets) FuncMap() template.FuncMap {
+func (widgets *Widgets) FuncMap() template.FuncMap {
 	funcMap := template.FuncMap{}
 
 	funcMap["render_widget"] = func(key string, context *Context, availableWidgets ...string) template.HTML {
-		return widgetInstance.Render(key, context, availableWidgets...)
+		return widgets.Render(key, context, availableWidgets...)
 	}
 
 	return funcMap
@@ -64,7 +68,7 @@ func (w *Widget) Render(context *Context, url string) template.HTML {
 	if file, err = w.findTemplate(file + ".tmpl"); err == nil {
 		if tmpl, err := template.New(filepath.Base(file)).ParseFiles(file); err == nil {
 			if err = tmpl.Execute(result, context.Options); err == nil {
-				return template.HTML(fmt.Sprintf("<div class=\"qor-widget qor-widget-%v\" data-url=\"%v\">\n%v\n</div>", utils.ToParamString(w.Name), url, result.String()))
+				return template.HTML(fmt.Sprintf("<div class=\"qor-widget qor-widget-%v\" data-widget-frontend-edit-url=\"%v\" data-url=\"%v\">\n%v\n</div>", utils.ToParamString(w.Name), "/admin/widgets/frontend-edit", url, result.String()))
 			}
 		}
 	}
@@ -73,7 +77,7 @@ func (w *Widget) Render(context *Context, url string) template.HTML {
 }
 
 // RegisterViewPath register views directory
-func (widgetInstance *Widgets) RegisterViewPath(p string) {
+func (widgets *Widgets) RegisterViewPath(p string) {
 	for _, gopath := range strings.Split(os.Getenv("GOPATH"), ":") {
 		if registerViewPath(path.Join(gopath, "src", p)) == nil {
 			return
