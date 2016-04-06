@@ -14,7 +14,7 @@ import (
 )
 
 // Render find a widget and render this widget
-func (widgetInstance *WidgetInstance) Render(widgetName string, context *Context, availableWidgets ...string) template.HTML {
+func (widgetInstance *Widgets) Render(widgetName string, context *Context, availableWidgets ...string) template.HTML {
 	if context == nil {
 		context = NewContext(map[string]interface{}{})
 	}
@@ -32,13 +32,13 @@ func (widgetInstance *WidgetInstance) Render(widgetName string, context *Context
 	return template.HTML(fmt.Sprintf("%v\n%v", assets_tag, widgetObj.Render(newContext, url)))
 }
 
-func (widgetInstance *WidgetInstance) settingEditURL(setting *QorWidgetSetting) string {
+func (widgetInstance *Widgets) settingEditURL(setting *QorWidgetSetting) string {
 	prefix := widgetInstance.SettingResource.GetAdmin().GetRouter().Prefix
 	return fmt.Sprintf("%v/%v/%v/edit", prefix, widgetInstance.SettingResource.ToParam(), setting.ID)
 }
 
 // Function map
-func (widgetInstance *WidgetInstance) FuncMap() template.FuncMap {
+func (widgetInstance *Widgets) FuncMap() template.FuncMap {
 	funcMap := template.FuncMap{}
 
 	funcMap["render_widget"] = func(key string, context *Context, availableWidgets ...string) template.HTML {
@@ -73,7 +73,7 @@ func (w *Widget) Render(context *Context, url string) template.HTML {
 }
 
 // RegisterViewPath register views directory
-func (widgetInstance *WidgetInstance) RegisterViewPath(p string) {
+func (widgetInstance *Widgets) RegisterViewPath(p string) {
 	for _, gopath := range strings.Split(os.Getenv("GOPATH"), ":") {
 		if registerViewPath(path.Join(gopath, "src", p)) == nil {
 			return

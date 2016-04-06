@@ -26,13 +26,13 @@ func TestRender(t *testing.T) {
 	db.DropTable(&widget.QorWidgetSetting{})
 	db.AutoMigrate(&widget.QorWidgetSetting{})
 
-	WidgetInstance := widget.New(&widget.Config{
+	Widgets := widget.New(&widget.Config{
 		DB: db,
 	})
-	WidgetInstance.RegisterViewPath("github.com/qor/widget/test")
+	Widgets.RegisterViewPath("github.com/qor/widget/test")
 
 	Admin := admin.New(&qor.Config{DB: db})
-	Admin.AddResource(WidgetInstance)
+	Admin.AddResource(Widgets)
 	Admin.MountTo("/admin", http.NewServeMux())
 
 	type bannerArgument struct {
@@ -40,7 +40,7 @@ func TestRender(t *testing.T) {
 		SubTitle string
 	}
 
-	WidgetInstance.RegisterWidget(&widget.Widget{
+	Widgets.RegisterWidget(&widget.Widget{
 		Name:     "Banner",
 		Template: "banner",
 		Setting:  Admin.NewResource(&bannerArgument{}),
@@ -54,7 +54,7 @@ func TestRender(t *testing.T) {
 		},
 	})
 
-	html := WidgetInstance.Render("HomeBanner", nil, "Banner")
+	html := Widgets.Render("HomeBanner", nil, "Banner")
 	if !strings.Contains(string(html), "Hello, \n<h1></h1>\n<h2></h2>\n") {
 		t.Errorf(color.RedString(fmt.Sprintf("\nWidget Render TestCase #%d: Failure Result:\n %s\n", 1, html)))
 	}
@@ -62,7 +62,7 @@ func TestRender(t *testing.T) {
 	widgetContext := widget.NewContext(map[string]interface{}{
 		"CurrentUser": "Qortex",
 	})
-	html = WidgetInstance.Render("HomeBanner", widgetContext, "Banner")
+	html = Widgets.Render("HomeBanner", widgetContext, "Banner")
 	if !strings.Contains(string(html), "Hello, Qortex\n<h1></h1>\n<h2></h2>\n") {
 		t.Errorf(color.RedString(fmt.Sprintf("\nWidget Render TestCase #%d: Failure Result:\n %s\n", 2, html)))
 	}
@@ -72,7 +72,7 @@ func TestRender(t *testing.T) {
 	setting.SetSerializableArgumentValue(&bannerArgument{Title: "Title", SubTitle: "SubTitle"})
 	db.Save(&setting)
 
-	html = WidgetInstance.Render("HomeBanner", widgetContext, "Banner")
+	html = Widgets.Render("HomeBanner", widgetContext, "Banner")
 	if !strings.Contains(string(html), "Hello, Qortex\n<h1>Title</h1>\n<h2>SubTitle</h2>\n") {
 		t.Errorf(color.RedString(fmt.Sprintf("\nWidget Render TestCase #%d: Failure Result:\n %s\n", 3, html)))
 	}

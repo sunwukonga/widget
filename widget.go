@@ -12,10 +12,10 @@ import (
 )
 
 var (
-	root, _   = os.Getwd()
-	viewPaths = []string{}
+	root, _           = os.Getwd()
+	viewPaths         []string
+	registeredWidgets []*Widget
 )
-var registeredWidgets []*Widget
 
 type Config struct {
 	DB    *gorm.DB
@@ -29,17 +29,32 @@ func init() {
 	registerViewPath(path.Join(root, "app/views/widgets"))
 }
 
+func New(config *Config) *Widgets {
+	instance := &Widgets{Config: config}
+	instance.RegisterViewPath("app/views/widgets")
+	return instance
+}
+
+type Widgets struct {
+	Config          *Config
+	SettingResource *admin.Resource
+}
+
 // ConfigureQorResource a method used to config Widget for qor admin
-func (w *WidgetInstance) ConfigureQorResource(res resource.Resourcer) {
+func (widgets *Widgets) ConfigureQorResource(res resource.Resourcer) {
 	if res, ok := res.(*admin.Resource); ok {
+		// register view paths
 		admin.RegisterViewPath("github.com/qor/widget/views")
 
+		res.Name = "Widget"
+
+		widgets.SettingResource = res.GetAdmin().NewResource(&QorWidgetSetting{})
+		widgets.SettingResource.IndexAttrs("ID", "Kind", "Name")
+		widgets.SettingResource.Name = res.Name
+
 		// configure routes
+		controller := widgetController{Widgets: widgets}
 		router := res.GetAdmin().GetRouter()
-		w.SettingResource = res.GetAdmin().NewResource(&QorWidgetSetting{})
-		w.SettingResource.IndexAttrs("ID", "Kind", "Name")
-		w.SettingResource.Name = res.Name
-		controller := widgetController{WidgetInstance: w}
 		router.Get(res.ToParam(), controller.Index)
 		router.Get(fmt.Sprintf("%v/frontend-edit", res.ToParam()), controller.FronendEdit)
 		router.Get(fmt.Sprintf("%v/%v", res.ToParam(), res.ParamIDName()), controller.Edit)
@@ -48,18 +63,7 @@ func (w *WidgetInstance) ConfigureQorResource(res resource.Resourcer) {
 	}
 }
 
-type WidgetInstance struct {
-	Config          *Config
-	SettingResource *admin.Resource
-}
-
-func New(config *Config) *WidgetInstance {
-	instance := &WidgetInstance{Config: config}
-	instance.RegisterViewPath("app/views/widgets")
-	return instance
-}
-
-func (widgetInstance *WidgetInstance) RegisterWidget(w *Widget) {
+func (widgets *Widgets) RegisterWidget(w *Widget) {
 	registeredWidgets = append(registeredWidgets, w)
 }
 

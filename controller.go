@@ -8,11 +8,11 @@ import (
 )
 
 type widgetController struct {
-	WidgetInstance *WidgetInstance
+	Widgets *Widgets
 }
 
 func (wc widgetController) Index(context *admin.Context) {
-	context = context.NewResourceContext(wc.WidgetInstance.SettingResource)
+	context = context.NewResourceContext(wc.Widgets.SettingResource)
 	result, err := context.FindMany()
 	context.AddError(err)
 
@@ -29,18 +29,18 @@ func (wc widgetController) Index(context *admin.Context) {
 
 func (wc widgetController) Edit(context *admin.Context) {
 	qorSetting := &QorWidgetSetting{}
-	context.Resource = wc.WidgetInstance.SettingResource
+	context.Resource = wc.Widgets.SettingResource
 	context.ResourceID = context.ResourceID
-	err := wc.WidgetInstance.SettingResource.FindOneHandler(qorSetting, nil, context.Context)
+	err := wc.Widgets.SettingResource.FindOneHandler(qorSetting, nil, context.Context)
 	context.AddError(err)
 	context.Execute("edit", qorSetting)
 }
 
 func (wc widgetController) Update(context *admin.Context) {
 	qorSetting := &QorWidgetSetting{}
-	context.Resource = wc.WidgetInstance.SettingResource
+	context.Resource = wc.Widgets.SettingResource
 	context.ResourceID = context.ResourceID
-	err := wc.WidgetInstance.SettingResource.FindOneHandler(qorSetting, nil, context.Context)
+	err := wc.Widgets.SettingResource.FindOneHandler(qorSetting, nil, context.Context)
 	context.AddError(err)
 	if context.AddError(context.Resource.Decode(context.Context, qorSetting)); !context.HasError() {
 		context.AddError(context.Resource.CallSave(qorSetting, context.Context))
