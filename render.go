@@ -59,7 +59,7 @@ func (w *Widget) Render(context *Context, url string) template.HTML {
 
 	defer func() {
 		if r := recover(); r != nil {
-			err = errors.New(fmt.Sprintf("Get error when render file %v: %v", file, r))
+			err = fmt.Errorf("Get error when render file %v: %v", file, r)
 			utils.ExitWithMsg(err)
 		}
 	}()
