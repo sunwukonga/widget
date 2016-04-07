@@ -30,7 +30,6 @@ func (wc widgetController) Index(context *admin.Context) {
 func (wc widgetController) Edit(context *admin.Context) {
 	qorSetting := &QorWidgetSetting{}
 	context.Resource = wc.Widgets.WidgetSettingResource
-	context.ResourceID = context.ResourceID
 	err := wc.Widgets.WidgetSettingResource.FindOneHandler(qorSetting, nil, context.Context)
 	context.AddError(err)
 	context.Execute("edit", qorSetting)
@@ -39,7 +38,6 @@ func (wc widgetController) Edit(context *admin.Context) {
 func (wc widgetController) Update(context *admin.Context) {
 	qorSetting := &QorWidgetSetting{}
 	context.Resource = wc.Widgets.WidgetSettingResource
-	context.ResourceID = context.ResourceID
 	err := wc.Widgets.WidgetSettingResource.FindOneHandler(qorSetting, nil, context.Context)
 	context.AddError(err)
 	if context.AddError(context.Resource.Decode(context.Context, qorSetting)); !context.HasError() {

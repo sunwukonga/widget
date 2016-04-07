@@ -13,7 +13,7 @@ import (
 	"github.com/qor/qor/utils"
 )
 
-// Render find a widget and render this widget
+// Render find widget by name, render it based on current context
 func (widgets *Widgets) Render(widgetName string, context *Context, availableWidgets ...string) template.HTML {
 	if context == nil {
 		context = NewContext(map[string]interface{}{})
@@ -40,7 +40,7 @@ func (widgets *Widgets) settingEditURL(setting *QorWidgetSetting) string {
 	return fmt.Sprintf("%v/%v/%v/edit", prefix, widgets.WidgetSettingResource.ToParam(), setting.ID)
 }
 
-// Function map
+// FuncMap return view functions map
 func (widgets *Widgets) FuncMap() template.FuncMap {
 	funcMap := template.FuncMap{}
 

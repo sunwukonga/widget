@@ -6,6 +6,7 @@ import (
 	"github.com/qor/serializable_meta"
 )
 
+// QorWidgetSetting default qor widget setting struct
 type QorWidgetSetting struct {
 	gorm.Model
 	Scope string

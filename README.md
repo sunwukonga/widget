@@ -1,4 +1,4 @@
-# Layout
+# Widget
 
 Page Builder - WIP
 
@@ -79,3 +79,7 @@ name, scope, widget_name, settings
 ```
 render_qor_layout -> get scope name, search with scope & layout name, get widget name, decode argument, render
 ```
+
+## License
+
+Released under the [MIT License](http://opensource.org/licenses/MIT).
