@@ -32,7 +32,15 @@ func (widgets *Widgets) Render(widgetName string, context *Context, availableWid
 		prefix       = widgets.Resource.GetAdmin().GetRouter().Prefix
 	)
 
-	return template.HTML(fmt.Sprintf("<script data-prefix=\"%v\" src=\"%v/assets/javascripts/widget_check.js?theme=widget\"></script><div class=\"qor-widget qor-widget-%v\" data-widget-frontend-edit-url=\"%v\" data-url=\"%v\">\n%v\n</div>", prefix, prefix, utils.ToParamString(widgetObj.Name), "/admin/widgets/frontend-edit", url, widgetObj.Render(newContext, url)))
+	return template.HTML(fmt.Sprintf(
+		"<script data-prefix=\"%v\" src=\"%v/assets/javascripts/widget_check.js?theme=widget\"></script><div class=\"qor-widget qor-widget-%v\" data-widget-frontend-edit-url=\"%v\" data-url=\"%v\">\n%v\n</div>",
+		prefix,
+		prefix,
+		utils.ToParamString(widgetObj.Name),
+		fmt.Sprintf("%v/%v/frontend-edit", prefix, widgets.Resource.ToParam()),
+		url,
+		widgetObj.Render(newContext, url),
+	))
 }
 
 func (widgets *Widgets) settingEditURL(setting *QorWidgetSetting) string {
