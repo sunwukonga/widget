@@ -9,16 +9,17 @@ import (
 // QorWidgetSetting default qor widget setting struct
 type QorWidgetSetting struct {
 	gorm.Model
-	Scope string
-	Name  string
+	Template string
+	Scope    string
+	Name     string
 	serializable_meta.SerializableMeta
 }
 
-func findSettingByNameAndKinds(db *gorm.DB, name string, kinds []string) *QorWidgetSetting {
+func findSettingByNameAndKinds(db *gorm.DB, widgetKey string, widgetName string) *QorWidgetSetting {
 	setting := QorWidgetSetting{}
-	if db.Where("name = ? AND kind IN (?)", name, kinds).First(&setting).RecordNotFound() {
-		setting.Name = name
-		setting.Kind = kinds[0]
+	if db.Where("name = ? AND kind = ?", widgetKey, widgetName).First(&setting).RecordNotFound() {
+		setting.Name = widgetKey
+		setting.Kind = widgetName
 		db.Save(&setting)
 	}
 	return &setting

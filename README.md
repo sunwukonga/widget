@@ -18,7 +18,7 @@ type bannerArgument struct {
 // Register a new widget
 Widgets.RegisterWidget(&widget.Widget{
   Name:     "Banner",
-  Template: "banner",
+  Templates: []string{"banner", "slideout"},
   Setting:  Admin.NewResource(&bannerArgument{}),
   Context: func(context *widget.Context, setting interface{}) *widget.Context {
     context.Options["Setting"] = argument
@@ -45,6 +45,12 @@ Admin.AddResource(Widgets)
     </div>
   </div>
 </div>
+```
+
+### Render
+
+```go
+Widgets.Render("Banner", "top_banner", nil)
 ```
 
 ## License

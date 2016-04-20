@@ -32,9 +32,9 @@ func init() {
 
 // New new widgets container
 func New(config *Config) *Widgets {
-	instance := &Widgets{Config: config}
-	instance.RegisterViewPath("app/views/widgets")
-	return instance
+	widgets := &Widgets{Config: config}
+	widgets.RegisterViewPath("app/views/widgets")
+	return widgets
 }
 
 // Widgets widgets container
@@ -42,6 +42,11 @@ type Widgets struct {
 	Config                *Config
 	Resource              *admin.Resource
 	WidgetSettingResource *admin.Resource
+}
+
+// RegisterWidget register a new widget
+func (widgets *Widgets) RegisterWidget(w *Widget) {
+	registeredWidgets = append(registeredWidgets, w)
 }
 
 // ConfigureQorResource a method used to config Widget for qor admin
@@ -76,17 +81,12 @@ func (widgets *Widgets) ConfigureQorResource(res resource.Resourcer) {
 	}
 }
 
-// RegisterWidget register a new widget
-func (widgets *Widgets) RegisterWidget(w *Widget) {
-	registeredWidgets = append(registeredWidgets, w)
-}
-
 // Widget widget struct
 type Widget struct {
-	Name     string
-	Template string
-	Setting  *admin.Resource
-	Context  func(context *Context, setting interface{}) *Context
+	Name      string
+	Templates []string
+	Setting   *admin.Resource
+	Context   func(context *Context, setting interface{}) *Context
 }
 
 // GetWidget get widget by name

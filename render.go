@@ -14,17 +14,13 @@ import (
 )
 
 // Render find widget by name, render it based on current context
-func (widgets *Widgets) Render(widgetName string, context *Context, availableWidgets ...string) template.HTML {
+func (widgets *Widgets) Render(widgetName string, widgetKey string, context *Context) template.HTML {
 	if context == nil {
 		context = NewContext(map[string]interface{}{})
 	}
 
-	if len(availableWidgets) == 0 {
-		availableWidgets = append(availableWidgets, widgetName)
-	}
-
 	var (
-		setting      = findSettingByNameAndKinds(widgets.Config.DB, widgetName, availableWidgets)
+		setting      = findSettingByNameAndKinds(widgets.Config.DB, widgetKey, widgetName)
 		widgetObj    = GetWidget(setting.Kind)
 		settingValue = setting.GetSerializableArgument(setting)
 		newContext   = widgetObj.Context(context, settingValue)
@@ -39,7 +35,7 @@ func (widgets *Widgets) Render(widgetName string, context *Context, availableWid
 		utils.ToParamString(widgetObj.Name),
 		fmt.Sprintf("%v/%v/inline-edit", prefix, widgets.Resource.ToParam()),
 		url,
-		widgetObj.Render(newContext, url),
+		widgetObj.Render(newContext, setting.Template, url),
 	))
 }
 
@@ -52,18 +48,20 @@ func (widgets *Widgets) settingEditURL(setting *QorWidgetSetting) string {
 func (widgets *Widgets) FuncMap() template.FuncMap {
 	funcMap := template.FuncMap{}
 
-	funcMap["render_widget"] = func(key string, context *Context, availableWidgets ...string) template.HTML {
-		return widgets.Render(key, context, availableWidgets...)
+	funcMap["render_widget"] = func(widgetName, widgetKey string, context *Context) template.HTML {
+		return widgets.Render(widgetName, widgetKey, context)
 	}
 
 	return funcMap
 }
 
 // Render register widget itself content
-func (w *Widget) Render(context *Context, url string) template.HTML {
+func (w *Widget) Render(context *Context, file, url string) template.HTML {
 	var err error
 	var result = bytes.NewBufferString("")
-	file := w.Template
+	if file == "" {
+		file = w.Templates[0]
+	}
 
 	defer func() {
 		if r := recover(); r != nil {
