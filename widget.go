@@ -50,6 +50,9 @@ func (widgets *Widgets) ConfigureQorResource(res resource.Resourcer) {
 		// register view paths
 		admin.RegisterViewPath("github.com/qor/widget/views")
 
+		// use widget theme
+		res.UseTheme("widget")
+
 		// set resources
 		res.Name = "Widget"
 		widgets.Resource = res
