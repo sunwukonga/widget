@@ -68,7 +68,7 @@ func (widgets *Widgets) ConfigureQorResource(res resource.Resourcer) {
 		controller := widgetController{Widgets: widgets}
 		router := res.GetAdmin().GetRouter()
 		router.Get(res.ToParam(), controller.Index)
-		router.Get(fmt.Sprintf("%v/frontend-edit", res.ToParam()), controller.FronendEdit)
+		router.Get(fmt.Sprintf("%v/inline-edit", res.ToParam()), controller.InlineEdit)
 		router.Get(fmt.Sprintf("%v/%v", res.ToParam(), res.ParamIDName()), controller.Edit)
 		router.Get(fmt.Sprintf("%v/%v/edit", res.ToParam(), res.ParamIDName()), controller.Edit)
 		router.Put(fmt.Sprintf("%v/%v", res.ToParam(), res.ParamIDName()), controller.Update)

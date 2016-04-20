@@ -49,6 +49,6 @@ func (wc widgetController) Update(context *admin.Context) {
 	http.Redirect(context.Writer, context.Request, context.Request.URL.Path, http.StatusFound)
 }
 
-func (wc widgetController) FronendEdit(context *admin.Context) {
-	context.Writer.Write([]byte(context.Render("front_edit")))
+func (wc widgetController) InlineEdit(context *admin.Context) {
+	context.Writer.Write([]byte(context.Render("inline_edit")))
 }
