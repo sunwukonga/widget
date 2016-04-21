@@ -83,18 +83,18 @@ func (widgets *Widgets) ConfigureQorResource(res resource.Resourcer) {
 					}
 					return
 				}})
-			if len(registeredScopes) > 0 {
-				widgets.WidgetSettingResource.IndexAttrs("ID", "Name", "Scope", "Template", "Kind", "CreatedAt", "UpdatedAt")
-				widgets.WidgetSettingResource.EditAttrs("ID", "Scope", "Template", &admin.Section{Title: "Settings", Rows: [][]string{[]string{"Kind"}, []string{"SerializableMeta"}}})
-			} else {
-				widgets.WidgetSettingResource.IndexAttrs("ID", "Name", "Template", "Kind", "CreatedAt", "UpdatedAt")
-				widgets.WidgetSettingResource.EditAttrs("ID", "Template", &admin.Section{Title: "Settings", Rows: [][]string{[]string{"Kind"}, []string{"SerializableMeta"}}})
-			}
+
+			widgets.WidgetSettingResource.IndexAttrs("ID", "Name", "Scope", "Template", "Kind", "CreatedAt", "UpdatedAt")
+			widgets.WidgetSettingResource.EditAttrs("ID", "Template", &admin.Section{Title: "Settings", Rows: [][]string{[]string{"Kind"}, []string{"SerializableMeta"}}})
 		}
 
 		// use widget theme
 		res.UseTheme("widget")
 		widgets.WidgetSettingResource.UseTheme("widget")
+
+		for funcName, fc := range funcMap {
+			res.GetAdmin().RegisterFuncMap(funcName, fc)
+		}
 
 		// configure routes
 		controller := widgetController{Widgets: widgets}
