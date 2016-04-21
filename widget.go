@@ -7,6 +7,7 @@ import (
 
 	"github.com/jinzhu/gorm"
 	"github.com/qor/admin"
+	"github.com/qor/qor"
 	"github.com/qor/qor/resource"
 	"github.com/qor/roles"
 )
@@ -63,8 +64,40 @@ func (widgets *Widgets) ConfigureQorResource(res resource.Resourcer) {
 		if widgets.WidgetSettingResource == nil {
 			widgets.WidgetSettingResource = res.GetAdmin().NewResource(&QorWidgetSetting{}, &admin.Config{Name: res.Name, Permission: roles.Deny(roles.Create, roles.Anyone)})
 			widgets.WidgetSettingResource.Meta(&admin.Meta{Name: "Name", Permission: roles.Deny(roles.Update, roles.Anyone)})
-			widgets.WidgetSettingResource.IndexAttrs("ID", "Name", "Scope", "Template", "Kind", "CreatedAt", "UpdatedAt")
-			widgets.WidgetSettingResource.EditAttrs("ID", "Scope", "Template", &admin.Section{Title: "Settings", Rows: [][]string{[]string{"Kind"}, []string{"SerializableMeta"}}})
+			widgets.WidgetSettingResource.Meta(&admin.Meta{
+				Name: "Template",
+				Type: "select_one",
+				Valuer: func(result interface{}, context *qor.Context) interface{} {
+					if setting, ok := result.(*QorWidgetSetting); ok {
+						if setting.Template != "" {
+							return setting.Template
+						}
+						if widget := GetWidget(setting.Kind); widget != nil {
+							// return first value of defined widget templates
+							for _, value := range widget.Templates {
+								return value
+							}
+						}
+					}
+					return ""
+				},
+				Collection: func(result interface{}, context *qor.Context) (results [][]string) {
+					if setting, ok := result.(*QorWidgetSetting); ok {
+						if widget := GetWidget(setting.Kind); widget != nil {
+							for _, value := range widget.Templates {
+								results = append(results, []string{value, value})
+							}
+						}
+					}
+					return
+				}})
+			if len(registeredScopes) > 0 {
+				widgets.WidgetSettingResource.IndexAttrs("ID", "Name", "Scope", "Template", "Kind", "CreatedAt", "UpdatedAt")
+				widgets.WidgetSettingResource.EditAttrs("ID", "Scope", "Template", &admin.Section{Title: "Settings", Rows: [][]string{[]string{"Kind"}, []string{"SerializableMeta"}}})
+			} else {
+				widgets.WidgetSettingResource.IndexAttrs("ID", "Name", "Template", "Kind", "CreatedAt", "UpdatedAt")
+				widgets.WidgetSettingResource.EditAttrs("ID", "Template", &admin.Section{Title: "Settings", Rows: [][]string{[]string{"Kind"}, []string{"SerializableMeta"}}})
+			}
 		}
 
 		// use widget theme
