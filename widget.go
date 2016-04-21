@@ -69,15 +69,7 @@ func (widgets *Widgets) ConfigureQorResource(res resource.Resourcer) {
 				Type: "select_one",
 				Valuer: func(result interface{}, context *qor.Context) interface{} {
 					if setting, ok := result.(*QorWidgetSetting); ok {
-						if setting.Template != "" {
-							return setting.Template
-						}
-						if widget := GetWidget(setting.Kind); widget != nil {
-							// return first value of defined widget templates
-							for _, value := range widget.Templates {
-								return value
-							}
-						}
+						return setting.GetTemplate()
 					}
 					return ""
 				},
