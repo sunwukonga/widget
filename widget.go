@@ -61,9 +61,10 @@ func (widgets *Widgets) ConfigureQorResource(res resource.Resourcer) {
 
 		// set setting resource
 		if widgets.WidgetSettingResource == nil {
-			widgets.WidgetSettingResource = res.GetAdmin().NewResource(&QorWidgetSetting{}, &admin.Config{Permission: roles.Deny(roles.Create, roles.Anyone)})
-			widgets.WidgetSettingResource.IndexAttrs("ID", "Kind", "Name")
-			widgets.WidgetSettingResource.Name = res.Name
+			widgets.WidgetSettingResource = res.GetAdmin().NewResource(&QorWidgetSetting{}, &admin.Config{Name: res.Name, Permission: roles.Deny(roles.Create, roles.Anyone)})
+			widgets.WidgetSettingResource.Meta(&admin.Meta{Name: "Name", Permission: roles.Deny(roles.Update, roles.Anyone)})
+			widgets.WidgetSettingResource.IndexAttrs("ID", "Name", "Scope", "Template", "Kind", "CreatedAt", "UpdatedAt")
+			widgets.WidgetSettingResource.EditAttrs("ID", "Scope", "Template", &admin.Section{Title: "Settings", Rows: [][]string{[]string{"Kind"}, []string{"SerializableMeta"}}})
 		}
 
 		// use widget theme
