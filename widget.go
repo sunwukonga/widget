@@ -63,7 +63,25 @@ func (widgets *Widgets) ConfigureQorResource(res resource.Resourcer) {
 		// set setting resource
 		if widgets.WidgetSettingResource == nil {
 			widgets.WidgetSettingResource = res.GetAdmin().NewResource(&QorWidgetSetting{}, &admin.Config{Name: res.Name, Permission: roles.Deny(roles.Create, roles.Anyone)})
+
 			widgets.WidgetSettingResource.Meta(&admin.Meta{Name: "Name", Permission: roles.Deny(roles.Update, roles.Anyone)})
+			widgets.WidgetSettingResource.Meta(&admin.Meta{
+				Name: "Scope",
+				Type: "hidden",
+				Valuer: func(result interface{}, context *qor.Context) interface{} {
+					if setting, ok := result.(*QorWidgetSetting); ok {
+						if setting.Scope != "" {
+							return setting.Scope
+						}
+					}
+
+					if scope := context.Request.URL.Query().Get("widget_scope"); scope != "" {
+						return scope
+					}
+
+					return "default"
+				},
+			})
 			widgets.WidgetSettingResource.Meta(&admin.Meta{
 				Name: "Template",
 				Type: "select_one",
@@ -85,7 +103,7 @@ func (widgets *Widgets) ConfigureQorResource(res resource.Resourcer) {
 				}})
 
 			widgets.WidgetSettingResource.IndexAttrs("ID", "Name", "Scope", "Template", "Kind", "CreatedAt", "UpdatedAt")
-			widgets.WidgetSettingResource.EditAttrs("ID", "Template", &admin.Section{Title: "Settings", Rows: [][]string{[]string{"Kind"}, []string{"SerializableMeta"}}})
+			widgets.WidgetSettingResource.EditAttrs("ID", "Scope", "Template", &admin.Section{Title: "Settings", Rows: [][]string{[]string{"Kind"}, []string{"SerializableMeta"}}})
 		}
 
 		// use widget theme
