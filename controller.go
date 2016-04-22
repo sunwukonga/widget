@@ -28,21 +28,20 @@ func (wc widgetController) Index(context *admin.Context) {
 }
 
 func (wc widgetController) Edit(context *admin.Context) {
-	qorSetting := &QorWidgetSetting{}
 	context.Resource = wc.Widgets.WidgetSettingResource
-	err := wc.Widgets.WidgetSettingResource.FindOneHandler(qorSetting, nil, context.Context)
-	context.AddError(err)
-	context.Execute("edit", qorSetting)
+	widgetSetting := context.Resource.NewStruct()
+	context.AddError(context.GetDB().First(widgetSetting, "name = ? AND scope = ?", context.ResourceID, "default").Error)
+	context.Execute("edit", widgetSetting)
 }
 
 func (wc widgetController) Update(context *admin.Context) {
-	qorSetting := &QorWidgetSetting{}
 	context.Resource = wc.Widgets.WidgetSettingResource
-	err := wc.Widgets.WidgetSettingResource.FindOneHandler(qorSetting, nil, context.Context)
-	context.AddError(err)
-	if context.AddError(context.Resource.Decode(context.Context, qorSetting)); !context.HasError() {
-		context.AddError(context.Resource.CallSave(qorSetting, context.Context))
-		context.Execute("edit", qorSetting)
+	widgetSetting := context.Resource.NewStruct()
+	context.AddError(context.GetDB().First(widgetSetting, "name = ? AND scope = ?", context.ResourceID, "default").Error)
+
+	if context.AddError(context.Resource.Decode(context.Context, widgetSetting)); !context.HasError() {
+		context.AddError(context.Resource.CallSave(widgetSetting, context.Context))
+		context.Execute("edit", widgetSetting)
 		return
 	}
 
