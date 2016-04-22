@@ -1,6 +1,8 @@
 package widget
 
 import (
+	"time"
+
 	"github.com/jinzhu/gorm"
 	"github.com/qor/admin"
 	"github.com/qor/serializable_meta"
@@ -8,11 +10,12 @@ import (
 
 // QorWidgetSetting default qor widget setting struct
 type QorWidgetSetting struct {
-	gorm.Model
+	Name     string `gorm:"primary_key"`
+	Scope    string `gorm:"primary_key;default:'default'"`
 	Template string
-	Scope    string
-	Name     string
 	serializable_meta.SerializableMeta
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 // GetTemplate get used widget template
