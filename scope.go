@@ -1,5 +1,7 @@
 package widget
 
+import "github.com/qor/qor/utils"
+
 var registeredScopes []*Scope
 
 // Scope widget scope
@@ -8,7 +10,11 @@ type Scope struct {
 	Visible func(*Context) bool
 }
 
+func (scope *Scope) ToParam() string {
+	return utils.ToParamString(scope.Name)
+}
+
 // RegisterScope register scope for widget
-func RegisterScope(scope *Scope) {
+func (widgets *Widgets) RegisterScope(scope *Scope) {
 	registeredScopes = append(registeredScopes, scope)
 }

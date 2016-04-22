@@ -1,4 +1,11 @@
-{{widget_available_scopes}}
+{{$scopes := widget_available_scopes}}
+{{if $scopes}}
+  <ul>
+    {{range $scope := $scopes}}
+      <li>{{$scope}}</li>
+    {{end}}
+  </ul>
+{{end}}
 
 {{$actions := load_actions "edit"}}
 {{if $actions}}

@@ -41,7 +41,7 @@ func (widgets *Widgets) Render(widgetName string, widgetKey string, context *Con
 
 func (widgets *Widgets) settingEditURL(setting *QorWidgetSetting) string {
 	prefix := widgets.WidgetSettingResource.GetAdmin().GetRouter().Prefix
-	return fmt.Sprintf("%v/%v/%v/edit", prefix, widgets.WidgetSettingResource.ToParam(), setting.ID)
+	return fmt.Sprintf("%v/%v/%v/edit?scope=%v", prefix, widgets.WidgetSettingResource.ToParam(), setting.Name, setting.Scope)
 }
 
 // FuncMap return view functions map
