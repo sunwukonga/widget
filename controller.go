@@ -3,6 +3,7 @@ package widget
 import (
 	"net/http"
 
+	"github.com/jinzhu/gorm"
 	"github.com/qor/admin"
 	"github.com/qor/responder"
 )
@@ -29,15 +30,13 @@ func (wc widgetController) Index(context *admin.Context) {
 
 func (wc widgetController) Edit(context *admin.Context) {
 	context.Resource = wc.Widgets.WidgetSettingResource
-	widgetSetting := context.Resource.NewStruct()
-	context.AddError(context.GetDB().First(widgetSetting, "name = ? AND scope = ?", context.ResourceID, "default").Error)
+	widgetSetting := wc.getWidget(context)
 	context.Execute("edit", widgetSetting)
 }
 
 func (wc widgetController) Update(context *admin.Context) {
 	context.Resource = wc.Widgets.WidgetSettingResource
-	widgetSetting := context.Resource.NewStruct()
-	context.AddError(context.GetDB().First(widgetSetting, "name = ? AND scope = ?", context.ResourceID, "default").Error)
+	widgetSetting := wc.getWidget(context)
 
 	if context.AddError(context.Resource.Decode(context.Context, widgetSetting)); !context.HasError() {
 		context.AddError(context.Resource.CallSave(widgetSetting, context.Context))
@@ -50,4 +49,22 @@ func (wc widgetController) Update(context *admin.Context) {
 
 func (wc widgetController) InlineEdit(context *admin.Context) {
 	context.Writer.Write([]byte(context.Render("inline_edit")))
+}
+
+func (wc widgetController) getWidget(context *admin.Context) (interface{}, error) {
+	var (
+		err           error
+		widgetSetting = wc.Widgets.WidgetSettingResource.NewStruct()
+		scope         = context.Request.URL.Query().Get("widget_scope")
+	)
+
+	if scope == "" {
+		scope = "default"
+	}
+
+	if err = context.GetDB().First(widgetSetting, "name = ? AND scope = ?", context.ResourceID, scope).Error; scope != "default" && err == gorm.ErrRecordNotFound {
+		err = context.GetDB().First(widgetSetting, "name = ? AND scope = ?", context.ResourceID, "default").Error
+	}
+
+	return widgetSetting, err
 }

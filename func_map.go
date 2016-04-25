@@ -1,14 +1,10 @@
 package widget
 
 var funcMap = map[string]interface{}{
-	"widget_available_scopes": func() (results []string) {
+	"widget_available_scopes": func() []*Scope {
 		if len(registeredScopes) > 0 {
-			results = append(results, "Default")
+			return append([]*Scope{{Name: "Default"}}, registeredScopes...)
 		}
-
-		for _, scope := range registeredScopes {
-			results = append(results, scope.Name)
-		}
-		return
+		return []*Scope{}
 	},
 }
