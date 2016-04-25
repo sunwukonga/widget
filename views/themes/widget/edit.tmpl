@@ -1,11 +1,15 @@
 {{$scopes := widget_available_scopes}}
+{{$result := .Result}}
+{{$resource := .Resource}}
 
 {{if $scopes}}
   {{$widget_scope := .Context.Request.URL.Query.Get "widget_scope"}}
 
   <ul>
     {{range $scope := $scopes}}
-      <li {{if eq $widget_scope $scope.ToParam}}class="active"{{end}}>{{$scope.Name}}</li>
+      <li {{if eq $widget_scope $scope.ToParam}}class="active"{{end}} data-name="{{$scope.ToParam}}" data-url="{{url_for $result $resource}}?widget_scope={{$scope.ToParam}}">
+        {{$scope.Name}}
+      </li>
     {{end}}
   </ul>
 {{end}}

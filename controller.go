@@ -30,13 +30,15 @@ func (wc widgetController) Index(context *admin.Context) {
 
 func (wc widgetController) Edit(context *admin.Context) {
 	context.Resource = wc.Widgets.WidgetSettingResource
-	widgetSetting := wc.getWidget(context)
+	widgetSetting, err := wc.getWidget(context)
+	context.AddError(err)
 	context.Execute("edit", widgetSetting)
 }
 
 func (wc widgetController) Update(context *admin.Context) {
 	context.Resource = wc.Widgets.WidgetSettingResource
-	widgetSetting := wc.getWidget(context)
+	widgetSetting, err := wc.getWidget(context)
+	context.AddError(err)
 
 	if context.AddError(context.Resource.Decode(context.Context, widgetSetting)); !context.HasError() {
 		context.AddError(context.Resource.CallSave(widgetSetting, context.Context))
