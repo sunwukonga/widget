@@ -1,7 +1,5 @@
 package widget
 
-import "errors"
-
 // NewContext new widget context
 func NewContext(options map[string]interface{}, availableWidgets ...string) *Context {
 	return &Context{
@@ -17,12 +15,12 @@ type Context struct {
 }
 
 // Get get option with name
-func (context Context) Get(name string) (interface{}, error) {
+func (context Context) Get(name string) (interface{}, bool) {
 	if value, ok := context.Options[name]; ok {
-		return value, nil
+		return value, true
 	}
 
-	return nil, errors.New("not found")
+	return nil, false
 }
 
 // Set set option by name

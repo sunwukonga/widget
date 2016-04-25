@@ -35,14 +35,40 @@ func (qorWidgetSetting QorWidgetSetting) GetTemplate() string {
 	return ""
 }
 
-func findSettingByNameAndKinds(db *gorm.DB, widgetKey string, widgetName string) *QorWidgetSetting {
-	setting := QorWidgetSetting{}
-	if db.Where("name = ? AND kind = ?", widgetKey, widgetName).First(&setting).RecordNotFound() {
+func findSettingByNameAndKinds(db *gorm.DB, widgetKey string, widgetName string, scopes []string) *QorWidgetSetting {
+	var setting *QorWidgetSetting
+	var settings []QorWidgetSetting
+
+	db.Where("name = ? AND kind = ? AND scope IN (?)", widgetKey, widgetName, append(scopes, "default")).Find(&settings)
+
+	if len(settings) > 0 {
+	OUTTER:
+		for _, scope := range scopes {
+			for _, s := range settings {
+				if s.Scope == scope {
+					setting = &s
+					break OUTTER
+				}
+			}
+		}
+	}
+
+	// use default setting
+	if setting == nil {
+		for _, s := range settings {
+			if s.Scope == "default" {
+				setting = &s
+			}
+		}
+	}
+
+	if setting != nil {
 		setting.Name = widgetKey
 		setting.Kind = widgetName
-		db.Save(&setting)
+		db.Save(setting)
 	}
-	return &setting
+
+	return setting
 }
 
 // GetSerializableArgumentResource get setting's argument's resource

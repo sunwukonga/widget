@@ -19,24 +19,34 @@ func (widgets *Widgets) Render(widgetName string, widgetKey string, context *Con
 		context = NewContext(map[string]interface{}{})
 	}
 
-	var (
-		setting      = findSettingByNameAndKinds(widgets.Config.DB, widgetKey, widgetName)
-		widgetObj    = GetWidget(setting.Kind)
-		settingValue = setting.GetSerializableArgument(setting)
-		newContext   = widgetObj.Context(context, settingValue)
-		url          = widgets.settingEditURL(setting)
-		prefix       = widgets.Resource.GetAdmin().GetRouter().Prefix
-	)
+	var scopes []string
+	for _, scope := range registeredScopes {
+		if scope.Visible(context) {
+			scopes = append(scopes, scope.ToParam())
+		}
+	}
 
-	return template.HTML(fmt.Sprintf(
-		"<script data-prefix=\"%v\" src=\"%v/assets/javascripts/widget_check.js?theme=widget\"></script><div class=\"qor-widget qor-widget-%v\" data-widget-inline-edit-url=\"%v\" data-url=\"%v\">\n%v\n</div>",
-		prefix,
-		prefix,
-		utils.ToParamString(widgetObj.Name),
-		fmt.Sprintf("%v/%v/inline-edit", prefix, widgets.Resource.ToParam()),
-		url,
-		widgetObj.Render(newContext, setting.Template, url),
-	))
+	if setting := findSettingByNameAndKinds(widgets.Config.DB, widgetKey, widgetName, scopes); setting != nil {
+		var (
+			widgetObj    = GetWidget(setting.Kind)
+			settingValue = setting.GetSerializableArgument(setting)
+			newContext   = widgetObj.Context(context, settingValue)
+			url          = widgets.settingEditURL(setting)
+			prefix       = widgets.Resource.GetAdmin().GetRouter().Prefix
+		)
+
+		return template.HTML(fmt.Sprintf(
+			"<script data-prefix=\"%v\" src=\"%v/assets/javascripts/widget_check.js?theme=widget\"></script><div class=\"qor-widget qor-widget-%v\" data-widget-inline-edit-url=\"%v\" data-url=\"%v\">\n%v\n</div>",
+			prefix,
+			prefix,
+			utils.ToParamString(widgetObj.Name),
+			fmt.Sprintf("%v/%v/inline-edit", prefix, widgets.Resource.ToParam()),
+			url,
+			widgetObj.Render(newContext, setting.Template, url),
+		))
+	}
+
+	return template.HTML("")
 }
 
 func (widgets *Widgets) settingEditURL(setting *QorWidgetSetting) string {
