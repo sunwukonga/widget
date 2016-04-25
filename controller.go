@@ -3,7 +3,6 @@ package widget
 import (
 	"net/http"
 
-	"github.com/jinzhu/gorm"
 	"github.com/qor/admin"
 	"github.com/qor/responder"
 )
@@ -14,7 +13,7 @@ type widgetController struct {
 
 func (wc widgetController) Index(context *admin.Context) {
 	context = context.NewResourceContext(wc.Widgets.WidgetSettingResource)
-	result, err := context.FindMany()
+	result, _, err := wc.getWidget(context)
 	context.AddError(err)
 
 	if context.HasError() {
@@ -30,14 +29,14 @@ func (wc widgetController) Index(context *admin.Context) {
 
 func (wc widgetController) Edit(context *admin.Context) {
 	context.Resource = wc.Widgets.WidgetSettingResource
-	widgetSetting, err := wc.getWidget(context)
+	widgetSetting, scopes, err := wc.getWidget(context)
 	context.AddError(err)
-	context.Execute("edit", widgetSetting)
+	context.Execute("edit", map[string]interface{}{"Scopes": scopes, "Widget": widgetSetting})
 }
 
 func (wc widgetController) Update(context *admin.Context) {
 	context.Resource = wc.Widgets.WidgetSettingResource
-	widgetSetting, err := wc.getWidget(context)
+	widgetSetting, _, err := wc.getWidget(context)
 	context.AddError(err)
 
 	if context.AddError(context.Resource.Decode(context.Context, widgetSetting)); !context.HasError() {
@@ -53,20 +52,34 @@ func (wc widgetController) InlineEdit(context *admin.Context) {
 	context.Writer.Write([]byte(context.Render("inline_edit")))
 }
 
-func (wc widgetController) getWidget(context *admin.Context) (interface{}, error) {
-	var (
-		err           error
-		widgetSetting = wc.Widgets.WidgetSettingResource.NewStruct()
-		scope         = context.Request.URL.Query().Get("widget_scope")
-	)
+func (wc widgetController) getWidget(context *admin.Context) (interface{}, []string, error) {
+	if context.ResourceID == "" {
+		// index page
+		context.SetDB(context.GetDB().Where("scope = ?", "default"))
+		results, err := context.FindMany()
+		return results, []string{}, err
+	} else {
+		// show page
+		result := wc.Widgets.WidgetSettingResource.NewStruct()
+		scope := context.Request.URL.Query().Get("widget_scope")
 
-	if scope == "" {
-		scope = "default"
+		var scopes []string
+		context.GetDB().Debug().Model(result).Where("name = ?", context.ResourceID).Pluck("scope", &scopes)
+
+		var hasScope bool
+
+		for _, s := range scopes {
+			if scope == s {
+				hasScope = true
+				break
+			}
+		}
+
+		if !hasScope {
+			scope = "default"
+		}
+
+		err := context.GetDB().First(result, "name = ? AND scope = ?", context.ResourceID, scope).Error
+		return result, scopes, err
 	}
-
-	if err = context.GetDB().First(widgetSetting, "name = ? AND scope = ?", context.ResourceID, scope).Error; scope != "default" && err == gorm.ErrRecordNotFound {
-		err = context.GetDB().First(widgetSetting, "name = ? AND scope = ?", context.ResourceID, "default").Error
-	}
-
-	return widgetSetting, err
 }

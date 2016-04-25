@@ -63,16 +63,6 @@ func (widgets *Widgets) ConfigureQorResource(res resource.Resourcer) {
 		// set setting resource
 		if widgets.WidgetSettingResource == nil {
 			widgets.WidgetSettingResource = res.GetAdmin().NewResource(&QorWidgetSetting{}, &admin.Config{Name: res.Name, Permission: roles.Deny(roles.Create, roles.Anyone)})
-			widgets.WidgetSettingResource.Scope(&admin.Scope{
-				Handle: func(db *gorm.DB, context *qor.Context) *gorm.DB {
-					var scope = "default"
-					if s := context.Request.URL.Query().Get("widget_scope"); s != "" {
-						scope = s
-					}
-					return db.Where("scope = ?", scope)
-				},
-				Default: true,
-			})
 
 			widgets.WidgetSettingResource.Meta(&admin.Meta{Name: "Name", Permission: roles.Deny(roles.Update, roles.Anyone)})
 			widgets.WidgetSettingResource.Meta(&admin.Meta{

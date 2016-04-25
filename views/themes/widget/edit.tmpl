@@ -1,14 +1,15 @@
-{{$scopes := widget_available_scopes}}
-{{$result := .Result}}
+{{$availableScopes := widget_available_scopes}}
+{{$scopes := .Result.Scopes}}
+{{$result := .Result.Widget}}
 {{$resource := .Resource}}
 
-{{if $scopes}}
+{{if $availableScopes}}
   {{$widget_scope := .Context.Request.URL.Query.Get "widget_scope"}}
 
   <ul>
-    {{range $scope := $scopes}}
-      <li {{if eq $widget_scope $scope.ToParam}}class="active"{{end}} data-name="{{$scope.ToParam}}">
-        <a href="#" data-url="{{url_for $result $resource}}?widget_scope={{$scope.ToParam}}">{{$scope.Name}}</a>
+    {{range $availableScope := $availableScopes}}
+      <li class="{{if eq $widget_scope $availableScope.ToParam}}active {{end}}{{if (is_included $scopes $availableScope.ToParam)}}available{{end}}" data-name="{{$availableScope.ToParam}}">
+        <a href="#" data-url="{{url_for $result $resource}}?widget_scope={{$availableScope.ToParam}}">{{$availableScope.Name}}</a>
       </li>
     {{end}}
   </ul>
