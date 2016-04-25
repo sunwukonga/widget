@@ -69,14 +69,14 @@ func (widgets *Widgets) ConfigureQorResource(res resource.Resourcer) {
 				Name: "Scope",
 				Type: "hidden",
 				Valuer: func(result interface{}, context *qor.Context) interface{} {
+					if scope := context.Request.URL.Query().Get("widget_scope"); scope != "" {
+						return scope
+					}
+
 					if setting, ok := result.(*QorWidgetSetting); ok {
 						if setting.Scope != "" {
 							return setting.Scope
 						}
-					}
-
-					if scope := context.Request.URL.Query().Get("widget_scope"); scope != "" {
-						return scope
 					}
 
 					return "default"
