@@ -1,1 +1,130 @@
-!function(t){"function"==typeof define&&define.amd?define(["jquery"],t):t("object"==typeof exports?require("jquery"):jQuery)}(function(t){"use strict";function i(e,o){this.$element=t(e),this.options=t.extend({},i.DEFAULTS,t.isPlainObject(o)&&o),this.init()}var e="qor.widget",o="enable."+e,n="disable."+e,r="click."+e,a=".qor-widget-button, .qor-slideout__close",d="";return i.prototype={constructor:i,init:function(){this.$element;this.bind(),this.initStatus()},bind:function(){this.$element.on(r,t.proxy(this.click,this))},initStatus:function(){t("body").append('<iframe id="qor-widget-iframe" src="'+d+'"></iframe>')},click:function(i){var e=t(i.target);i.stopPropagation(),e.is(a)&&(t("#qor-widget-iframe").contents().find(".js-widget-edit-link").attr("data-url",e.data("url")),t("#qor-widget-iframe").addClass("show"),t("body").addClass("open-widget-editor"))}},i.plugin=function(o){return this.each(function(){var n,r=t(this),a=r.data(e);if(!a){if(/destroy/.test(o))return;r.data(e,a=new i(this,o))}"string"==typeof o&&t.isFunction(n=a[o])&&n.apply(a)})},i.isScrollToBottom=function(t){return t.clientHeight+t.scrollTop===t.scrollHeight},t(function(){t("body").attr("data-toggle","qor.widgets"),t(".qor-widget").each(function(i,e){var o=t(e).find("*").eq(0);d=t(e).data("widget-inline-edit-url"),o.css("position","relative").addClass("qor-widget").attr("data-url",t(e).data("url")).unwrap(),o.append('<div class="qor-widget-embed-wrapper"><button data-url="'+t(e).data("url")+'" class="qor-widget-button">Edit</button></div>')}),window.closeWidgetEditBox=function(){t("#qor-widget-iframe").removeClass("show"),t("#qor-widget-iframe")[0].contentWindow.location.reload(),t("body").removeClass("open-widget-editor")};var e='[data-toggle="qor.widgets"]';t(document).on(n,function(o){i.plugin.call(t(e,o.target),"destroy")}).on(o,function(o){i.plugin.call(t(e,o.target))}).triggerHandler(o)}),i});
+(function (factory) {
+  if (typeof define === 'function' && define.amd) {
+    // AMD. Register as anonymous module.
+    define(['jquery'], factory);
+  } else if (typeof exports === 'object') {
+    // Node / CommonJS
+    factory(require('jquery'));
+  } else {
+    // Browser globals.
+    factory(jQuery);
+  }
+})(function ($) {
+
+  'use strict';
+
+  var NAMESPACE = 'qor.widget';
+  var EVENT_ENABLE = 'enable.' + NAMESPACE;
+  var EVENT_DISABLE = 'disable.' + NAMESPACE;
+  var EVENT_CLICK = 'click.' + NAMESPACE;
+  var EDIT_WIDGET_BUTTON = '.qor-widget-button, .qor-slideout__close';
+  var INLINE_EDIT_URL = "";
+
+  function QorWidget(element, options) {
+    this.$element = $(element);
+    this.options = $.extend({}, QorWidget.DEFAULTS, $.isPlainObject(options) && options);
+    this.init();
+  }
+
+  QorWidget.prototype = {
+    constructor: QorWidget,
+
+    init: function () {
+      var $this = this.$element;
+      this.bind();
+      this.initStatus();
+    },
+
+    bind: function () {
+      this.$element.on(EVENT_CLICK, $.proxy(this.click, this));
+    },
+
+    initStatus : function () {
+      $("body").append('<iframe id="qor-widget-iframe" src="' + INLINE_EDIT_URL + '"></iframe>');
+      $("body").append('<iframe id="qor-widget-inline-iframe" src="http://localhost:7000/admin/widgets/4/edit"></iframe>');
+      $("#qor-widget-inline-iframe").load(function() {
+        var $container = $("#qor-widget-inline-iframe").contents().find(".qor-form-container");
+        var height = $container.outerHeight();
+        $("#qor-widget-inline-iframe").height(height);
+        $("#qor-widget-inline-iframe").contents().find("header").remove();
+        $container.css("margin", 0);
+        $("#qor-widget-inline-iframe").css({ "border" : "1px solid #eee" });
+        $("#qor-widget-inline-iframe").contents().find("body").css({ "overflow" : "hidden" });
+      });
+    },
+
+    click: function (e) {
+      var $target = $(e.target);
+      e.stopPropagation();
+
+      if ($target.is(EDIT_WIDGET_BUTTON)){
+        if ($target.data("is-inline-edit")) {
+          var $widget = $target.parents(".qor-widget");
+          $widget.find("*").hide();
+          $target.parents(".qor-widget").append($("#qor-widget-inline-iframe"));
+          $("#qor-widget-inline-iframe").width("100%");
+        } else {
+          $("#qor-widget-iframe").contents().find(".js-widget-edit-link").attr("data-url", $target.data("url"));
+          $("#qor-widget-iframe").addClass("show");
+          $("body").addClass("open-widget-editor");
+        }
+      }
+    }
+  };
+
+  QorWidget.plugin = function (options) {
+    return this.each(function () {
+      var $this = $(this);
+      var data = $this.data(NAMESPACE);
+      var fn;
+
+      if (!data) {
+
+        if (/destroy/.test(options)) {
+          return;
+        }
+
+        $this.data(NAMESPACE, (data = new QorWidget(this, options)));
+      }
+
+      if (typeof options === 'string' && $.isFunction(fn = data[options])) {
+        fn.apply(data);
+      }
+    });
+  };
+
+  QorWidget.isScrollToBottom = function (element) {
+    return element.clientHeight + element.scrollTop === element.scrollHeight;
+  };
+
+  $(function () {
+    $("body").attr("data-toggle", "qor.widgets");
+
+    // Add button to each widget
+    $(".qor-widget").each(function (i, e) {
+      var $wrap = $(e).find("*").eq(0);
+      INLINE_EDIT_URL = $(e).data("widget-inline-edit-url");
+      $wrap.css("position", "relative").addClass("qor-widget").attr("data-url", $(e).data("url")).unwrap();
+      $wrap.append('<div class="qor-widget-embed-wrapper"><button data-is-inline-edit="' + $(e).data("is-inline-edit") + '" data-url=\"' + $(e).data("url") + '\" class="qor-widget-button">Edit</button></div>');
+    });
+
+    // Reload current page after close slideshow
+    window.closeWidgetEditBox = function () {
+      $("#qor-widget-iframe").removeClass("show");
+      $("#qor-widget-iframe")[0].contentWindow.location.reload();
+      $("body").removeClass("open-widget-editor");
+    };
+
+    var selector = '[data-toggle="qor.widgets"]';
+    $(document).
+      on(EVENT_DISABLE, function (e) {
+        QorWidget.plugin.call($(selector, e.target), 'destroy');
+      }).
+      on(EVENT_ENABLE, function (e) {
+        QorWidget.plugin.call($(selector, e.target));
+      }).
+      triggerHandler(EVENT_ENABLE);
+  });
+
+  return QorWidget;
+});

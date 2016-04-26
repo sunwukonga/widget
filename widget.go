@@ -109,10 +109,11 @@ func (widgets *Widgets) ConfigureQorResource(res resource.Resourcer) {
 
 // Widget widget struct
 type Widget struct {
-	Name      string
-	Templates []string
-	Setting   *admin.Resource
-	Context   func(context *Context, setting interface{}) *Context
+	Name         string
+	Templates    []string
+	Setting      *admin.Resource
+	Context      func(context *Context, setting interface{}) *Context
+	IsInlineEdit bool
 }
 
 // GetWidget get widget by name

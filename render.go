@@ -29,12 +29,13 @@ func (widgets *Widgets) Render(widgetName string, widgetKey string, context *Con
 	)
 
 	return template.HTML(fmt.Sprintf(
-		"<script data-prefix=\"%v\" src=\"%v/assets/javascripts/widget_check.js?theme=widget\"></script><div class=\"qor-widget qor-widget-%v\" data-widget-inline-edit-url=\"%v\" data-url=\"%v\">\n%v\n</div>",
+		"<script data-prefix=\"%v\" src=\"%v/assets/javascripts/widget_check.js?theme=widget\"></script><div class=\"qor-widget qor-widget-%v\" data-widget-inline-edit-url=\"%v\" data-url=\"%v\" data-is-inline-edit=\"%v\">\n%v\n</div>",
 		prefix,
 		prefix,
 		utils.ToParamString(widgetObj.Name),
 		fmt.Sprintf("%v/%v/inline-edit", prefix, widgets.Resource.ToParam()),
 		url,
+		widgetObj.IsInlineEdit,
 		widgetObj.Render(newContext, setting.Template, url),
 	))
 }

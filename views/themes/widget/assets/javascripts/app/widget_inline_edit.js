@@ -41,6 +41,16 @@
 
     initStatus : function () {
       $("body").append('<iframe id="qor-widget-iframe" src="' + INLINE_EDIT_URL + '"></iframe>');
+      $("body").append('<iframe id="qor-widget-inline-iframe" src="http://localhost:7000/admin/widgets/4/edit"></iframe>');
+      $("#qor-widget-inline-iframe").load(function() {
+        var $container = $("#qor-widget-inline-iframe").contents().find(".qor-form-container");
+        var height = $container.outerHeight();
+        $("#qor-widget-inline-iframe").height(height);
+        $("#qor-widget-inline-iframe").contents().find("header").remove();
+        $container.css("margin", 0);
+        $("#qor-widget-inline-iframe").css({ "border" : "1px solid #eee" });
+        $("#qor-widget-inline-iframe").contents().find("body").css({ "overflow" : "hidden" });
+      });
     },
 
     click: function (e) {
@@ -48,9 +58,16 @@
       e.stopPropagation();
 
       if ($target.is(EDIT_WIDGET_BUTTON)){
-        $("#qor-widget-iframe").contents().find(".js-widget-edit-link").attr("data-url", $target.data("url"));
-        $("#qor-widget-iframe").addClass("show");
-        $("body").addClass("open-widget-editor");
+        if ($target.data("is-inline-edit")) {
+          var $widget = $target.parents(".qor-widget");
+          $widget.find("*").hide();
+          $target.parents(".qor-widget").append($("#qor-widget-inline-iframe"));
+          $("#qor-widget-inline-iframe").width("100%");
+        } else {
+          $("#qor-widget-iframe").contents().find(".js-widget-edit-link").attr("data-url", $target.data("url"));
+          $("#qor-widget-iframe").addClass("show");
+          $("body").addClass("open-widget-editor");
+        }
       }
     }
   };
@@ -82,12 +99,16 @@
 
   $(function () {
     $("body").attr("data-toggle", "qor.widgets");
+
+    // Add button to each widget
     $(".qor-widget").each(function (i, e) {
       var $wrap = $(e).find("*").eq(0);
       INLINE_EDIT_URL = $(e).data("widget-inline-edit-url");
       $wrap.css("position", "relative").addClass("qor-widget").attr("data-url", $(e).data("url")).unwrap();
-      $wrap.append('<div class="qor-widget-embed-wrapper"><button data-url=\"' + $(e).data("url") + '\" class="qor-widget-button">Edit</button></div>');
+      $wrap.append('<div class="qor-widget-embed-wrapper"><button data-is-inline-edit="' + $(e).data("is-inline-edit") + '" data-url=\"' + $(e).data("url") + '\" class="qor-widget-button">Edit</button></div>');
     });
+
+    // Reload current page after close slideshow
     window.closeWidgetEditBox = function () {
       $("#qor-widget-iframe").removeClass("show");
       $("#qor-widget-iframe")[0].contentWindow.location.reload();
