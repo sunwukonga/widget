@@ -100,7 +100,8 @@ func (widgets *Widgets) ConfigureQorResource(res resource.Resourcer) {
 						}
 					}
 					return
-				}})
+				},
+			})
 
 			widgets.WidgetSettingResource.IndexAttrs("ID", "Name", "Template", "Kind", "CreatedAt", "UpdatedAt")
 			widgets.WidgetSettingResource.EditAttrs("ID", "Scope", "Template", &admin.Section{Title: "Settings", Rows: [][]string{[]string{"Kind"}, []string{"SerializableMeta"}}})
