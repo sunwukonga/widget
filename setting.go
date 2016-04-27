@@ -65,7 +65,7 @@ func findSettingByNameAndKinds(db *gorm.DB, widgetKey string, widgetName string,
 	if setting == nil {
 		setting = &QorWidgetSetting{Name: widgetKey, Scope: "default"}
 		setting.Kind = widgetName
-		db.Save(setting)
+		db.Create(setting)
 	}
 
 	return setting
