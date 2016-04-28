@@ -63,7 +63,7 @@
 
       if ($target.is(EDIT_WIDGET_BUTTON)){
         if ($target.data("is-inline-edit")) {
-          $("#qor-widget-inline-iframe").attr("src", "http://localhost:7000/admin/widgets/BannerEditor");
+          $("#qor-widget-inline-iframe").attr("src", $target.data("url"));
           var $widget = $target.parents(".qor-widget");
           $widget.find("*").hide();
           $target.parents(".qor-widget").append($("#qor-widget-inline-iframe"));
