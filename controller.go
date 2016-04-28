@@ -13,7 +13,7 @@ type widgetController struct {
 
 func (wc widgetController) Index(context *admin.Context) {
 	context = context.NewResourceContext(wc.Widgets.WidgetSettingResource)
-	result, err := context.FindMany()
+	result, _, err := wc.getWidget(context)
 	context.AddError(err)
 
 	if context.HasError() {
@@ -28,21 +28,20 @@ func (wc widgetController) Index(context *admin.Context) {
 }
 
 func (wc widgetController) Edit(context *admin.Context) {
-	qorSetting := &QorWidgetSetting{}
 	context.Resource = wc.Widgets.WidgetSettingResource
-	err := wc.Widgets.WidgetSettingResource.FindOneHandler(qorSetting, nil, context.Context)
+	widgetSetting, scopes, err := wc.getWidget(context)
 	context.AddError(err)
-	context.Execute("edit", qorSetting)
+	context.Execute("edit", map[string]interface{}{"Scopes": scopes, "Widget": widgetSetting})
 }
 
 func (wc widgetController) Update(context *admin.Context) {
-	qorSetting := &QorWidgetSetting{}
 	context.Resource = wc.Widgets.WidgetSettingResource
-	err := wc.Widgets.WidgetSettingResource.FindOneHandler(qorSetting, nil, context.Context)
+	widgetSetting, _, err := wc.getWidget(context)
 	context.AddError(err)
-	if context.AddError(context.Resource.Decode(context.Context, qorSetting)); !context.HasError() {
-		context.AddError(context.Resource.CallSave(qorSetting, context.Context))
-		context.Execute("edit", qorSetting)
+
+	if context.AddError(context.Resource.Decode(context.Context, widgetSetting)); !context.HasError() {
+		context.AddError(context.Resource.CallSave(widgetSetting, context.Context))
+		context.Execute("edit", widgetSetting)
 		return
 	}
 
@@ -51,4 +50,36 @@ func (wc widgetController) Update(context *admin.Context) {
 
 func (wc widgetController) InlineEdit(context *admin.Context) {
 	context.Writer.Write([]byte(context.Render("inline_edit")))
+}
+
+func (wc widgetController) getWidget(context *admin.Context) (interface{}, []string, error) {
+	if context.ResourceID == "" {
+		// index page
+		context.SetDB(context.GetDB().Where("scope = ?", "default"))
+		results, err := context.FindMany()
+		return results, []string{}, err
+	} else {
+		// show page
+		result := wc.Widgets.WidgetSettingResource.NewStruct()
+		scope := context.Request.URL.Query().Get("widget_scope")
+
+		var scopes []string
+		context.GetDB().Debug().Model(result).Where("name = ?", context.ResourceID).Pluck("scope", &scopes)
+
+		var hasScope bool
+
+		for _, s := range scopes {
+			if scope == s {
+				hasScope = true
+				break
+			}
+		}
+
+		if !hasScope {
+			scope = "default"
+		}
+
+		err := context.GetDB().First(result, "name = ? AND scope = ?", context.ResourceID, scope).Error
+		return result, scopes, err
+	}
 }

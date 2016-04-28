@@ -14,43 +14,63 @@ import (
 )
 
 // Render find widget by name, render it based on current context
-func (widgets *Widgets) Render(widgetName string, widgetKey string, context *Context) template.HTML {
+func (widgets *Widgets) Render(widgetName string, widgetKey string, context *Context, enableInlineEdit ...bool) template.HTML {
+	var enabledInlineEdit bool
 	if context == nil {
 		context = NewContext(map[string]interface{}{})
 	}
 
-	var (
-		setting      = findSettingByNameAndKinds(widgets.Config.DB, widgetKey, widgetName)
-		widgetObj    = GetWidget(setting.Kind)
-		settingValue = setting.GetSerializableArgument(setting)
-		newContext   = widgetObj.Context(context, settingValue)
-		url          = widgets.settingEditURL(setting)
-		prefix       = widgets.Resource.GetAdmin().GetRouter().Prefix
-	)
+	for _, e := range enableInlineEdit {
+		enabledInlineEdit = e
+	}
 
-	return template.HTML(fmt.Sprintf(
-		"<script data-prefix=\"%v\" src=\"%v/assets/javascripts/widget_check.js?theme=widget\"></script><div class=\"qor-widget qor-widget-%v\" data-widget-inline-edit-url=\"%v\" data-url=\"%v\" data-is-inline-edit=\"%v\">\n%v\n</div>",
-		prefix,
-		prefix,
-		utils.ToParamString(widgetObj.Name),
-		fmt.Sprintf("%v/%v/inline-edit", prefix, widgets.Resource.ToParam()),
-		url,
-		widgetObj.IsInlineEdit,
-		widgetObj.Render(newContext, setting.Template, url),
-	))
+	var scopes []string
+	for _, scope := range registeredScopes {
+		if scope.Visible(context) {
+			scopes = append(scopes, scope.ToParam())
+		}
+	}
+
+	if setting := findSettingByNameAndKinds(widgets.Config.DB, widgetKey, widgetName, scopes); setting != nil {
+		var (
+			widgetObj     = GetWidget(setting.Kind)
+			widgetSetting = widgetObj.Context(context, setting.GetSerializableArgument(setting))
+			url           = widgets.settingEditURL(setting)
+		)
+
+		if enabledInlineEdit {
+			prefix := widgets.Resource.GetAdmin().GetRouter().Prefix
+
+			return template.HTML(fmt.Sprintf(
+				"<script data-prefix=\"%v\" src=\"%v/assets/javascripts/widget_check.js?theme=widget\"></script><div class=\"qor-widget qor-widget-%v\" data-widget-inline-edit-url=\"%v\" data-url=\"%v\" data-is-inline-edit=\"%v\">\n%v\n</div>",
+				prefix,
+				prefix,
+				utils.ToParamString(widgetObj.Name),
+				fmt.Sprintf("%v/%v/inline-edit", prefix, widgets.Resource.ToParam()),
+				url,
+				widgetObj.IsInlineEdit,
+
+				widgetObj.Render(widgetSetting, setting.Template, url),
+			))
+		} else {
+			return widgetObj.Render(widgetSetting, setting.Template, url)
+		}
+	}
+
+	return template.HTML("")
 }
 
 func (widgets *Widgets) settingEditURL(setting *QorWidgetSetting) string {
 	prefix := widgets.WidgetSettingResource.GetAdmin().GetRouter().Prefix
-	return fmt.Sprintf("%v/%v/%v/edit", prefix, widgets.WidgetSettingResource.ToParam(), setting.ID)
+	return fmt.Sprintf("%v/%v/%v/edit?widget_scope=%v", prefix, widgets.WidgetSettingResource.ToParam(), setting.Name, setting.Scope)
 }
 
 // FuncMap return view functions map
-func (widgets *Widgets) FuncMap() template.FuncMap {
+func (widgets *Widgets) FuncMap(enableInlineEdit bool) template.FuncMap {
 	funcMap := template.FuncMap{}
 
 	funcMap["render_widget"] = func(widgetName, widgetKey string, context *Context) template.HTML {
-		return widgets.Render(widgetName, widgetKey, context)
+		return widgets.Render(widgetName, widgetKey, context, enableInlineEdit)
 	}
 
 	return funcMap

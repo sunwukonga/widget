@@ -1,15 +1,10 @@
 package widget
 
-import "fmt"
-
-func init() {
-	var funcMap = map[string]interface{}{
-		"widget_available_scopes": func() (results []string) {
-			for _, scope := range registeredScopes {
-				results = append(results, scope.Name)
-			}
-			return
-		},
-	}
-	fmt.Println(funcMap)
+var funcMap = map[string]interface{}{
+	"widget_available_scopes": func() []*Scope {
+		if len(registeredScopes) > 0 {
+			return append([]*Scope{{Name: "Default"}}, registeredScopes...)
+		}
+		return []*Scope{}
+	},
 }
