@@ -30,7 +30,6 @@
     constructor: QorWidget,
 
     init: function () {
-      var $this = this.$element;
       this.bind();
       this.initStatus();
     },
@@ -41,7 +40,7 @@
 
     initStatus : function () {
       $("body").append('<iframe id="qor-widget-iframe" src="' + INLINE_EDIT_URL + '"></iframe>');
-      $("body").append('<iframe id="qor-widget-inline-iframe" src="http://localhost:7000/admin/widgets/4/edit"></iframe>');
+      $("body").append('<iframe id="qor-widget-inline-iframe" src="http://localhost:7000/admin/widgets/BannerEditor"></iframe>');
       $("#qor-widget-inline-iframe").load(function() {
         var $container = $("#qor-widget-inline-iframe").contents().find(".qor-form-container");
         var height = $container.outerHeight();
@@ -124,6 +123,7 @@
         QorWidget.plugin.call($(selector, e.target));
       }).
       triggerHandler(EVENT_ENABLE);
+
   });
 
   return QorWidget;
