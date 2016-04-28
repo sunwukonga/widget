@@ -40,15 +40,19 @@
 
     initStatus : function () {
       $("body").append('<iframe id="qor-widget-iframe" src="' + INLINE_EDIT_URL + '"></iframe>');
-      $("body").append('<iframe id="qor-widget-inline-iframe" src="http://localhost:7000/admin/widgets/BannerEditor"></iframe>');
+      $("body").append('<iframe id="qor-widget-inline-iframe" style="width:0;height:0;border:none;"></iframe>');
       $("#qor-widget-inline-iframe").load(function() {
-        var $container = $("#qor-widget-inline-iframe").contents().find(".qor-form-container");
-        var height = $container.outerHeight();
-        $("#qor-widget-inline-iframe").height(height);
-        $("#qor-widget-inline-iframe").contents().find("header").remove();
-        $container.css("margin", 0);
-        $("#qor-widget-inline-iframe").css({ "border" : "1px solid #eee" });
-        $("#qor-widget-inline-iframe").contents().find("body").css({ "overflow" : "hidden" });
+        if($(this).attr("src")) {
+          var $container = $("#qor-widget-inline-iframe").contents().find(".qor-form-container");
+          var height = $container.outerHeight();
+          $("#qor-widget-inline-iframe").height(height);
+          $("#qor-widget-inline-iframe").width("100%");
+          $("#qor-widget-inline-iframe").contents().find("header").remove();
+          $("#qor-widget-inline-iframe").css({ "border" : "1px solid #eee" });
+          $("#qor-widget-inline-iframe").contents().find("body").css({ "overflow" : "hidden" });
+          $("#qor-widget-inline-iframe").addClass("show");
+          $container.css("margin", 0);
+        }
       });
     },
 
@@ -58,10 +62,10 @@
 
       if ($target.is(EDIT_WIDGET_BUTTON)){
         if ($target.data("is-inline-edit")) {
+          $("#qor-widget-inline-iframe").attr("src", "http://localhost:7000/admin/widgets/BannerEditor");
           var $widget = $target.parents(".qor-widget");
           $widget.find("*").hide();
           $target.parents(".qor-widget").append($("#qor-widget-inline-iframe"));
-          $("#qor-widget-inline-iframe").width("100%");
         } else {
           $("#qor-widget-iframe").contents().find(".js-widget-edit-link").attr("data-url", $target.data("url"));
           $("#qor-widget-iframe").addClass("show");
