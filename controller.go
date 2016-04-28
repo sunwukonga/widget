@@ -36,12 +36,12 @@ func (wc widgetController) Edit(context *admin.Context) {
 
 func (wc widgetController) Update(context *admin.Context) {
 	context.Resource = wc.Widgets.WidgetSettingResource
-	widgetSetting, _, err := wc.getWidget(context)
+	widgetSetting, scopes, err := wc.getWidget(context)
 	context.AddError(err)
 
 	if context.AddError(context.Resource.Decode(context.Context, widgetSetting)); !context.HasError() {
 		context.AddError(context.Resource.CallSave(widgetSetting, context.Context))
-		context.Execute("edit", widgetSetting)
+		context.Execute("edit", map[string]interface{}{"Scopes": scopes, "Widget": widgetSetting})
 		return
 	}
 
