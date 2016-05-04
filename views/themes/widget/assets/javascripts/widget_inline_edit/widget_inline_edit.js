@@ -30,7 +30,6 @@
     constructor: QorWidget,
 
     init: function () {
-      var $this = this.$element;
       this.bind();
       this.initStatus();
     },
@@ -104,6 +103,7 @@
       }).
       triggerHandler(EVENT_ENABLE);
   });
+
 
   return QorWidget;
 });
