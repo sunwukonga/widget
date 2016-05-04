@@ -49,6 +49,7 @@
       if ($target.is(EDIT_WIDGET_BUTTON)){
         $("#qor-widget-iframe").contents().find(".js-widget-edit-link").attr("data-url", $target.data("url"));
         $("#qor-widget-iframe").addClass("show");
+        $("#qor-widget-iframe").focus();
         $("body").addClass("open-widget-editor");
       }
     }
