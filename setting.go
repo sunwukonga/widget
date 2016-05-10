@@ -72,6 +72,6 @@ func findSettingByNameAndKinds(db *gorm.DB, widgetKey string, widgetName string,
 }
 
 // GetSerializableArgumentResource get setting's argument's resource
-func (setting *QorWidgetSetting) GetSerializableArgumentResource() *admin.Resource {
-	return GetWidget(setting.Kind).Setting
+func (qorWidgetSetting *QorWidgetSetting) GetSerializableArgumentResource() *admin.Resource {
+	return GetWidget(qorWidgetSetting.Kind).Setting
 }

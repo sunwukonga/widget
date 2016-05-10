@@ -50,9 +50,9 @@ func (widgets *Widgets) Render(widgetName string, widgetKey string, context *Con
 				url,
 				widgetObj.Render(widgetSetting, setting.Template, url),
 			))
-		} else {
-			return widgetObj.Render(widgetSetting, setting.Template, url)
 		}
+
+		return widgetObj.Render(widgetSetting, setting.Template, url)
 	}
 
 	return template.HTML("")

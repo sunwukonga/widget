@@ -10,6 +10,7 @@ type Scope struct {
 	Visible func(*Context) bool
 }
 
+// ToParam generate param for scope
 func (scope *Scope) ToParam() string {
 	return utils.ToParamString(scope.Name)
 }

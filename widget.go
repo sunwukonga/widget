@@ -104,7 +104,7 @@ func (widgets *Widgets) ConfigureQorResource(res resource.Resourcer) {
 			})
 
 			widgets.WidgetSettingResource.IndexAttrs("ID", "Name", "Template", "Kind", "CreatedAt", "UpdatedAt")
-			widgets.WidgetSettingResource.EditAttrs("ID", "Scope", "Template", &admin.Section{Title: "Settings", Rows: [][]string{[]string{"Kind"}, []string{"SerializableMeta"}}})
+			widgets.WidgetSettingResource.EditAttrs("ID", "Scope", "Template", &admin.Section{Title: "Settings", Rows: [][]string{{"Kind"}, {"SerializableMeta"}}})
 		}
 
 		// use widget theme

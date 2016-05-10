@@ -58,28 +58,28 @@ func (wc widgetController) getWidget(context *admin.Context) (interface{}, []str
 		context.SetDB(context.GetDB().Where("scope = ?", "default"))
 		results, err := context.FindMany()
 		return results, []string{}, err
-	} else {
-		// show page
-		result := wc.Widgets.WidgetSettingResource.NewStruct()
-		scope := context.Request.URL.Query().Get("widget_scope")
-
-		var scopes []string
-		context.GetDB().Debug().Model(result).Where("name = ?", context.ResourceID).Pluck("scope", &scopes)
-
-		var hasScope bool
-
-		for _, s := range scopes {
-			if scope == s {
-				hasScope = true
-				break
-			}
-		}
-
-		if !hasScope {
-			scope = "default"
-		}
-
-		err := context.GetDB().First(result, "name = ? AND scope = ?", context.ResourceID, scope).Error
-		return result, scopes, err
 	}
+
+	// show page
+	result := wc.Widgets.WidgetSettingResource.NewStruct()
+	scope := context.Request.URL.Query().Get("widget_scope")
+
+	var scopes []string
+	context.GetDB().Debug().Model(result).Where("name = ?", context.ResourceID).Pluck("scope", &scopes)
+
+	var hasScope bool
+
+	for _, s := range scopes {
+		if scope == s {
+			hasScope = true
+			break
+		}
+	}
+
+	if !hasScope {
+		scope = "default"
+	}
+
+	err := context.GetDB().First(result, "name = ? AND scope = ?", context.ResourceID, scope).Error
+	return result, scopes, err
 }
