@@ -1,39 +1,64 @@
 # Widget
 
-Create a widget for frontend
+Define some customizable, shareable HTML widgets for different pages
 
-## Usage
-
-### Getting Started
+## Getting Started
 
 ```go
-// Initialize a new widgets container
+// Initialize widgets container
 Widgets := widget.New(&widget.Config{DB: db})
 
-// Widget Settings Argument
+// Define widget's setting struct
 type bannerArgument struct {
   Title           string
   Link            string
   BackgroundImage media_library.FileSystem
 }
 
-// Register a new widget
+// Register new widget
 Widgets.RegisterWidget(&widget.Widget{
+  // Widget's Name
   Name:     "Banner",
+  // Widget's available templates
   Templates: []string{"banner1", "banner2"},
+  // Widget's setting, which is configurable from the place using the widget with inline edit
   Setting:  Admin.NewResource(&bannerArgument{}),
+  // Generate a context to render the widget based on the widget's configurations
   Context: func(context *widget.Context, setting interface{}) *widget.Context {
-    context.Options["Setting"] = argument
+    context.Options["Setting"] = setting
     context.Options["CurrentTime"] = time.Now()
     return context
   },
 })
 
-// Add to qor admin
+// Manage widgets from QOR Admin interface
 Admin.AddResource(Widgets)
 ```
 
+### Render Widget From Controller
+
+```go
+func Index(request *http.Request, writer http.ResponseWriter) {
+  // Generate widget context, widget will generate a new context based on it, and use the generated one to render template
+  widgetContext := widget.NewContext(map[string]interface{}{"Request": request, "CurrentUser": currentUser})
+
+  // Render Widget `HomeBanner` based on widget `Banner`'s definition to HTML template
+  bannerContent := Widgets.Render("Banner", "HomeBanner", widgetContext)
+
+  // Render Widget `CampaignBanner` based on widget `Banner`'s definition with inline edit enabled to HTML template
+  bannerContent := Widgets.Render("Banner", "CampaignBanner", widgetContext, true)
+
+  // Then you could use the banner's HTML content in your templates
+}
+```
+
 ### Templates
+
+Widget's template is Golang HTML template based, so supposed to be as flexible as it.
+
+Above widget configured to use templates `banner1`, `banner2`, QOR widget will look up templates from path `$APP_ROOT/app/views/widgets` by default, so you need to put your template to the right place.
+
+When render with the found template, QOR widget will use the widget's generated context and use it to render the template like how Golang template works.
 
 ```go
 // app/views/widgets/banner1.tmpl
@@ -60,7 +85,15 @@ Admin.AddResource(Widgets)
 </div>
 ```
 
+You could also register other paths like:
+
+```go
+Widgets.RegisterViewPath("app/views/widgets")
+```
+
 ### Register Scopes
+
+In some cases, you might want to show a different page according to UTM source/medium/campaign or for A/B testing to increase the conversion rate.  then Widget's Scope is for you, you could register some scopes, and configure your widget for each of them, when a scope's `Visible` condition matched, then widget will use its configuration to render the widget.
 
 ```go
 Widgets.RegisterScope(&widget.Scope{
@@ -84,23 +117,9 @@ Widgets.RegisterScope(&widget.Scope{
 })
 ```
 
-### Render Widget
+## Live Widget Demo
 
-```go
-func Index(request *http.Request, writer http.ResponseWriter) {
-  widgetContext := widget.NewContext(map[string]interface{}{"Request": request, "CurrentUser": currentUser})
-
-  // Render Widget
-  bannerContent := Widgets.Render("Banner", "HomeBanner",  widgetContext)
-
-  // Render Widget With Inline Edit
-  bannerContent := Widgets.Render("Banner", "HomeBanner",  widgetContext, true)
-}
-```
-
-## Live Demo
-
-[Qor Demo](http://demo.getqor.com)
+[Widget Demo](http://demo.getqor.com)
 
 ## License
 
