@@ -54,7 +54,7 @@ func (widgets *Widgets) RegisterWidget(w *Widget) {
 func (widgets *Widgets) ConfigureQorResource(res resource.Resourcer) {
 	if res, ok := res.(*admin.Resource); ok {
 		// register view paths
-		admin.RegisterViewPath("github.com/qor/widget/views")
+		res.GetAdmin().RegisterViewPath("github.com/qor/widget/views")
 
 		// set resources
 		res.Name = "Widget"
