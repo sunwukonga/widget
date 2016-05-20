@@ -65,7 +65,7 @@ func (wc widgetController) getWidget(context *admin.Context) (interface{}, []str
 	scope := context.Request.URL.Query().Get("widget_scope")
 
 	var scopes []string
-	context.GetDB().Debug().Model(result).Where("name = ?", context.ResourceID).Pluck("scope", &scopes)
+	context.GetDB().Model(result).Where("name = ?", context.ResourceID).Pluck("scope", &scopes)
 
 	var hasScope bool
 
