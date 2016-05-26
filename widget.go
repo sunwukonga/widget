@@ -89,6 +89,28 @@ func (widgets *Widgets) ConfigureQorResource(res resource.Resourcer) {
 				},
 			})
 			widgets.WidgetSettingResource.Meta(&admin.Meta{
+				Name: "Widgets",
+				Type: "select_one",
+				Valuer: func(result interface{}, context *qor.Context) interface{} {
+					if setting, ok := result.(*QorWidgetSetting); ok {
+						return GetWidget(setting.Kind).Name
+					}
+					return ""
+				},
+				Collection: func(result interface{}, context *qor.Context) (results [][]string) {
+					if setting, ok := result.(*QorWidgetSetting); ok {
+						for _, group := range registeredWidgetsGroup {
+							if group.Name == setting.Kind {
+								for _, widget := range group.Widgets {
+									results = append(results, []string{widget, widget})
+								}
+							}
+						}
+					}
+					return
+				},
+			})
+			widgets.WidgetSettingResource.Meta(&admin.Meta{
 				Name: "Template",
 				Type: "select_one",
 				Valuer: func(result interface{}, context *qor.Context) interface{} {
@@ -109,8 +131,14 @@ func (widgets *Widgets) ConfigureQorResource(res resource.Resourcer) {
 				},
 			})
 
-			widgets.WidgetSettingResource.IndexAttrs("ID", "Name", "Template", "Kind", "CreatedAt", "UpdatedAt")
-			widgets.WidgetSettingResource.EditAttrs("ID", "Scope", "Template", &admin.Section{Title: "Settings", Rows: [][]string{{"Kind"}, {"SerializableMeta"}}})
+			widgets.WidgetSettingResource.IndexAttrs("ID", "Name", "Widgets", "Template", "Kind", "CreatedAt", "UpdatedAt")
+			widgets.WidgetSettingResource.EditAttrs(
+				"ID", "Scope", "Widgets", "Template",
+				&admin.Section{
+					Title: "Settings",
+					Rows:  [][]string{{"Kind"}, {"SerializableMeta"}},
+				},
+			)
 		}
 
 		// use widget theme
