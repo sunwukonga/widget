@@ -5,6 +5,7 @@ import (
 
 	"github.com/qor/admin"
 	"github.com/qor/responder"
+	"github.com/qor/serializable_meta"
 )
 
 type widgetController struct {
@@ -81,5 +82,12 @@ func (wc widgetController) getWidget(context *admin.Context) (interface{}, []str
 	}
 
 	err := context.GetDB().First(result, "name = ? AND scope = ?", context.ResourceID, scope).Error
+
+	if widgetType := context.Request.URL.Query().Get("widget_type"); widgetType != "" {
+		if serializableMeta, ok := result.(serializable_meta.SerializableMetaInterface); ok {
+			serializableMeta.SetSerializableArgumentKind(widgetType)
+			serializableMeta.SetSerializableArgumentValue(nil)
+		}
+	}
 	return result, scopes, err
 }
