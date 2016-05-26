@@ -36,11 +36,11 @@ func (qorWidgetSetting QorWidgetSetting) GetTemplate() string {
 	return ""
 }
 
-func findSettingByNameAndKinds(db *gorm.DB, widgetKey string, widgetName string, scopes []string) *QorWidgetSetting {
+func findSettingByName(db *gorm.DB, widgetName string, scopes []string, widgetsGroupNameOrWidgetName string) *QorWidgetSetting {
 	var setting *QorWidgetSetting
 	var settings []QorWidgetSetting
 
-	db.Where("name = ? AND kind = ? AND scope IN (?)", widgetKey, widgetName, append(scopes, "default")).Find(&settings)
+	db.Where("name = ? AND scope IN (?)", widgetName, append(scopes, "default")).Find(&settings)
 
 	if len(settings) > 0 {
 	OUTTER:
@@ -64,8 +64,8 @@ func findSettingByNameAndKinds(db *gorm.DB, widgetKey string, widgetName string,
 	}
 
 	if setting == nil {
-		setting = &QorWidgetSetting{Name: widgetKey, Scope: "default"}
-		setting.Kind = widgetName
+		setting = &QorWidgetSetting{Name: widgetName, Scope: "default"}
+		setting.Kind = widgetsGroupNameOrWidgetName
 		db.Create(setting)
 	}
 

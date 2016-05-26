@@ -153,5 +153,13 @@ func GetWidget(name string) *Widget {
 			return w
 		}
 	}
+
+	for _, g := range registeredWidgetsGroup {
+		if g.Name == name {
+			for _, widget := range g.Widgets {
+				return widget
+			}
+		}
+	}
 	return nil
 }

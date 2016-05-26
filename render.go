@@ -14,7 +14,7 @@ import (
 )
 
 // Render find widget by name, render it based on current context
-func (widgets *Widgets) Render(widgetName string, widgetKey string, context *Context, enableInlineEdit ...bool) template.HTML {
+func (widgets *Widgets) Render(widgetName string, widgetsGroupNameOrWidgetName string, context *Context, enableInlineEdit ...bool) template.HTML {
 	var enabledInlineEdit bool
 	if context == nil {
 		context = NewContext(map[string]interface{}{})
@@ -24,14 +24,14 @@ func (widgets *Widgets) Render(widgetName string, widgetKey string, context *Con
 		enabledInlineEdit = e
 	}
 
-	var scopes []string
+	var visibleScopes []string
 	for _, scope := range registeredScopes {
 		if scope.Visible(context) {
-			scopes = append(scopes, scope.ToParam())
+			visibleScopes = append(visibleScopes, scope.ToParam())
 		}
 	}
 
-	if setting := findSettingByNameAndKinds(widgets.Config.DB, widgetKey, widgetName, scopes); setting != nil {
+	if setting := findSettingByName(widgets.Config.DB, widgetName, visibleScopes, widgetsGroupNameOrWidgetName); setting != nil {
 		var (
 			widgetObj     = GetWidget(setting.Kind)
 			widgetSetting = widgetObj.Context(context, setting.GetSerializableArgument(setting))
