@@ -143,7 +143,7 @@ type Widget struct {
 // WidgetsGroup widgets Group
 type WidgetsGroup struct {
 	Name    string
-	Widgets []*Widget
+	Widgets []string
 }
 
 // GetWidget get widget by name
@@ -156,8 +156,8 @@ func GetWidget(name string) *Widget {
 
 	for _, g := range registeredWidgetsGroup {
 		if g.Name == name {
-			for _, widget := range g.Widgets {
-				return widget
+			for _, widgetName := range g.Widgets {
+				return GetWidget(widgetName)
 			}
 		}
 	}
