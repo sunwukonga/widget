@@ -13,9 +13,10 @@ import (
 )
 
 var (
-	root, _           = os.Getwd()
-	viewPaths         []string
-	registeredWidgets []*Widget
+	root, _                = os.Getwd()
+	viewPaths              []string
+	registeredWidgets      []*Widget
+	registeredWidgetsGroup []*WidgetsGroup
 )
 
 // Config widget config
@@ -48,6 +49,11 @@ type Widgets struct {
 // RegisterWidget register a new widget
 func (widgets *Widgets) RegisterWidget(w *Widget) {
 	registeredWidgets = append(registeredWidgets, w)
+}
+
+// RegisterWidgetGroup register widgets group
+func (widgets *Widgets) RegisterWidgetsGroup(group *WidgetsGroup) {
+	registeredWidgetsGroup = append(registeredWidgetsGroup, group)
 }
 
 // ConfigureQorResource a method used to config Widget for qor admin
@@ -132,6 +138,12 @@ type Widget struct {
 	Templates []string
 	Setting   *admin.Resource
 	Context   func(context *Context, setting interface{}) *Context
+}
+
+// WidgetsGroup widgets Group
+type WidgetsGroup struct {
+	Name    string
+	Widgets []*Widget
 }
 
 // GetWidget get widget by name

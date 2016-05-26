@@ -124,3 +124,27 @@ Widgets.RegisterScope(&widget.Scope{
 ## License
 
 Released under the [MIT License](http://opensource.org/licenses/MIT).
+
+```go
+Widgets.RegisterWidget(&widget.Widget{
+  // Widget's Name
+  Name:     "Banner",
+  // Widget's available templates
+  Templates: []string{"banner1", "banner2"},
+  // Widget's setting, which is configurable from the place using the widget with inline edit
+  Setting:  Admin.NewResource(&bannerArgument{}),
+  // Generate a context to render the widget based on the widget's configurations
+  Context: func(context *widget.Context, setting interface{}) *widget.Context {
+    context.Options["Setting"] = setting
+    context.Options["CurrentTime"] = time.Now()
+    return context
+  },
+})
+
+Widgets.RegisterWidgetGroup(&widget.WidgetGroup{
+  Name: "Banner",
+  Widgets: []*widget.Widget{widget1, widget2},
+})
+
+render_widget "home_banner", "Banner"
+```

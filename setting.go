@@ -10,9 +10,10 @@ import (
 
 // QorWidgetSetting default qor widget setting struct
 type QorWidgetSetting struct {
-	Name     string `gorm:"primary_key"`
-	Scope    string `gorm:"primary_key;default:'default'"`
-	Template string
+	Name      string `gorm:"primary_key"`
+	Scope     string `gorm:"primary_key;default:'default'"`
+	GroupName string
+	Template  string
 	serializable_meta.SerializableMeta
 	CreatedAt time.Time
 	UpdatedAt time.Time
