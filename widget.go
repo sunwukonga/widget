@@ -92,9 +92,14 @@ func (widgets *Widgets) ConfigureQorResource(res resource.Resourcer) {
 				Name: "Widgets",
 				Type: "select_one",
 				Valuer: func(result interface{}, context *qor.Context) interface{} {
+					if typ := context.Request.URL.Query().Get("widget_type"); typ != "" {
+						return typ
+					}
+
 					if setting, ok := result.(*QorWidgetSetting); ok {
 						return GetWidget(setting.Kind).Name
 					}
+
 					return ""
 				},
 				Collection: func(result interface{}, context *qor.Context) (results [][]string) {
@@ -105,6 +110,10 @@ func (widgets *Widgets) ConfigureQorResource(res resource.Resourcer) {
 									results = append(results, []string{widget, widget})
 								}
 							}
+						}
+
+						if len(results) == 0 {
+							results = append(results, []string{setting.Kind, setting.Kind})
 						}
 					}
 					return
