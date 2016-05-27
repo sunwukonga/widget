@@ -9,6 +9,7 @@ import (
 	"github.com/qor/admin"
 	"github.com/qor/qor"
 	"github.com/qor/qor/resource"
+	"github.com/qor/qor/utils"
 	"github.com/qor/roles"
 )
 
@@ -105,7 +106,7 @@ func (widgets *Widgets) ConfigureQorResource(res resource.Resourcer) {
 				Collection: func(result interface{}, context *qor.Context) (results [][]string) {
 					if setting, ok := result.(*QorWidgetSetting); ok {
 						for _, group := range registeredWidgetsGroup {
-							if group.Name == setting.Kind {
+							if group.Name == setting.GroupName {
 								for _, widget := range group.Widgets {
 									results = append(results, []string{widget, widget})
 								}
@@ -117,6 +118,11 @@ func (widgets *Widgets) ConfigureQorResource(res resource.Resourcer) {
 						}
 					}
 					return
+				},
+				Setter: func(result interface{}, metaValue *resource.MetaValue, context *qor.Context) {
+					if setting, ok := result.(*QorWidgetSetting); ok {
+						setting.Kind = utils.ToString(metaValue.Value)
+					}
 				},
 			})
 			widgets.WidgetSettingResource.Meta(&admin.Meta{
