@@ -43,7 +43,7 @@
 
     addWidgetSlideout: function () {
       var $select = $(TARGET_WIDGET);
-      var url = $('tr.is-selected').data('url') + '?widget_type=';
+      var url = $select.closest('form').prop('action') + '?widget_type=';
 
       $select.find('option').each(function () {
         var $this = $(this);
