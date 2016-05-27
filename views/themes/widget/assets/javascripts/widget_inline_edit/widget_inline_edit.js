@@ -13,21 +13,21 @@
 
   'use strict';
 
-  var NAMESPACE = 'qor.widget';
+  var NAMESPACE = 'qor.widget.inlineEdit';
   var EVENT_ENABLE = 'enable.' + NAMESPACE;
   var EVENT_DISABLE = 'disable.' + NAMESPACE;
   var EVENT_CLICK = 'click.' + NAMESPACE;
   var EDIT_WIDGET_BUTTON = '.qor-widget-button, .qor-slideout__close';
   var INLINE_EDIT_URL = "";
 
-  function QorWidget(element, options) {
+  function QorWidgetInlineEdit(element, options) {
     this.$element = $(element);
-    this.options = $.extend({}, QorWidget.DEFAULTS, $.isPlainObject(options) && options);
+    this.options = $.extend({}, QorWidgetInlineEdit.DEFAULTS, $.isPlainObject(options) && options);
     this.init();
   }
 
-  QorWidget.prototype = {
-    constructor: QorWidget,
+  QorWidgetInlineEdit.prototype = {
+    constructor: QorWidgetInlineEdit,
 
     init: function () {
       this.bind();
@@ -55,7 +55,7 @@
     }
   };
 
-  QorWidget.plugin = function (options) {
+  QorWidgetInlineEdit.plugin = function (options) {
     return this.each(function () {
       var $this = $(this);
       var data = $this.data(NAMESPACE);
@@ -67,7 +67,7 @@
           return;
         }
 
-        $this.data(NAMESPACE, (data = new QorWidget(this, options)));
+        $this.data(NAMESPACE, (data = new QorWidgetInlineEdit(this, options)));
       }
 
       if (typeof options === 'string' && $.isFunction(fn = data[options])) {
@@ -76,7 +76,7 @@
     });
   };
 
-  QorWidget.isScrollToBottom = function (element) {
+  QorWidgetInlineEdit.isScrollToBottom = function (element) {
     return element.clientHeight + element.scrollTop === element.scrollHeight;
   };
 
@@ -97,14 +97,14 @@
     var selector = '[data-toggle="qor.widgets"]';
     $(document).
       on(EVENT_DISABLE, function (e) {
-        QorWidget.plugin.call($(selector, e.target), 'destroy');
+        QorWidgetInlineEdit.plugin.call($(selector, e.target), 'destroy');
       }).
       on(EVENT_ENABLE, function (e) {
-        QorWidget.plugin.call($(selector, e.target));
+        QorWidgetInlineEdit.plugin.call($(selector, e.target));
       }).
       triggerHandler(EVENT_ENABLE);
   });
 
 
-  return QorWidget;
+  return QorWidgetInlineEdit;
 });
