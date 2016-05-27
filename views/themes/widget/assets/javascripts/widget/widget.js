@@ -31,6 +31,7 @@
     init: function () {
       this.bind();
       this.addWidgetSlideout();
+      this.initSelect();
     },
 
     bind: function () {
@@ -41,15 +42,24 @@
       this.$element.off(EVENT_CHANGE, 'select', this.change);
     },
 
+    initSelect: function () {
+      $('select').closest('.qor-form-section').hide();
+      $('select').each(function () {
+        // TODO:
+        if ($(this).find('option').size() > 2) {
+          $(this).closest('.qor-form-section').show();
+        }
+      });
+    },
+
     addWidgetSlideout: function () {
       var $select = $(TARGET_WIDGET);
-      var url = $select.closest('form').prop('action') + '?widget_type=';
 
       $select.find('option').each(function () {
         var $this = $(this);
         var val = $this.val();
 
-        url = url + val;
+        var url = $select.closest('form').prop('action') + '?widget_type=' + val;
         if (val) {
           $select.after('<a href="#" style="display: none;" class="qor-widget-' + val + '" data-url="' + url + '">' + val + '</a>');
         }
