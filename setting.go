@@ -65,8 +65,12 @@ func findSettingByName(db *gorm.DB, widgetName string, scopes []string, widgetsG
 
 	if setting == nil {
 		setting = &QorWidgetSetting{Name: widgetName, Scope: "default"}
+		setting.GroupName = widgetsGroupNameOrWidgetName
 		setting.Kind = widgetsGroupNameOrWidgetName
 		db.Create(setting)
+	} else if setting.GroupName != widgetsGroupNameOrWidgetName {
+		setting.GroupName = widgetsGroupNameOrWidgetName
+		db.Save(setting)
 	}
 
 	return setting
