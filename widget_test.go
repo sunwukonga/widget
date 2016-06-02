@@ -54,7 +54,7 @@ func TestRender(t *testing.T) {
 		},
 	})
 
-	html := Widgets.Render("Banner", "HomeBanner", nil)
+	html := Widgets.Render("HomeBanner", "Banner", nil)
 	if !strings.Contains(string(html), "Hello, \n<h1></h1>\n<h2></h2>\n") {
 		t.Errorf(color.RedString(fmt.Sprintf("\nWidget Render TestCase #%d: Failure Result:\n %s\n", 1, html)))
 	}
@@ -62,7 +62,7 @@ func TestRender(t *testing.T) {
 	widgetContext := widget.NewContext(map[string]interface{}{
 		"CurrentUser": "Qortex",
 	})
-	html = Widgets.Render("Banner", "HomeBanner", widgetContext)
+	html = Widgets.Render("HomeBanner", "Banner", widgetContext)
 	if !strings.Contains(string(html), "Hello, Qortex\n<h1></h1>\n<h2></h2>\n") {
 		t.Errorf(color.RedString(fmt.Sprintf("\nWidget Render TestCase #%d: Failure Result:\n %s\n", 2, html)))
 	}
@@ -72,7 +72,7 @@ func TestRender(t *testing.T) {
 	setting.SetSerializableArgumentValue(&bannerArgument{Title: "Title", SubTitle: "SubTitle"})
 	db.Save(&setting)
 
-	html = Widgets.Render("Banner", "HomeBanner", widgetContext)
+	html = Widgets.Render("HomeBanner", "Banner", widgetContext)
 	if !strings.Contains(string(html), "Hello, Qortex\n<h1>Title</h1>\n<h2>SubTitle</h2>\n") {
 		t.Errorf(color.RedString(fmt.Sprintf("\nWidget Render TestCase #%d: Failure Result:\n %s\n", 3, html)))
 	}
