@@ -42,11 +42,13 @@ func (wc widgetController) Update(context *admin.Context) {
 
 	if context.AddError(context.Resource.Decode(context.Context, widgetSetting)); !context.HasError() {
 		context.AddError(context.Resource.CallSave(widgetSetting, context.Context))
-		context.Execute("edit", map[string]interface{}{"Scopes": scopes, "Widget": widgetSetting})
-		return
 	}
 
-	http.Redirect(context.Writer, context.Request, context.Request.URL.Path, http.StatusFound)
+	if context.HasError() {
+		context.Execute("edit", map[string]interface{}{"Scopes": scopes, "Widget": widgetSetting})
+	} else {
+		http.Redirect(context.Writer, context.Request, context.Request.URL.Path, http.StatusFound)
+	}
 }
 
 func (wc widgetController) InlineEdit(context *admin.Context) {
