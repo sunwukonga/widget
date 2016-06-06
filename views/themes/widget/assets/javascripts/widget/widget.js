@@ -13,6 +13,7 @@
 
   'use strict';
 
+  var $body = $('body');
   var NAMESPACE = 'qor.widget';
   var EVENT_ENABLE = 'enable.' + NAMESPACE;
   var EVENT_DISABLE = 'disable.' + NAMESPACE;
@@ -54,38 +55,52 @@
 
     addWidgetSlideout: function () {
       var $select = $(TARGET_WIDGET);
+      var tabScopeActive = $body.data('tabScopeActive');
+      var isInSlideout = $('.qor-slideout').is(':visible');
+      var actionUrl = $select.closest('form').prop('action');
+      var url;
+      var clickTmpl;
 
       $select.find('option').each(function () {
         var $this = $(this);
         var val = $this.val();
 
-        var url = $select.closest('form').prop('action') + '?widget_type=' + val;
         if (val) {
-          $select.after('<a href="#" style="display: none;" class="qor-widget-' + val + '" data-url="' + url + '">' + val + '</a>');
+          url =  actionUrl + '?widget_type=' + val;
+
+          if (tabScopeActive){
+            url =  url + '&widget_scope=' + tabScopeActive;
+          }
+
+          if (isInSlideout) {
+            clickTmpl = '<a href=' + url + ' style="display: none;" class="qor-widget-' + val + '" data-url="' + url + '">' + val + '</a>';
+          } else {
+            clickTmpl = '<a href=' + url + ' style="display: none;" class="qor-widget-' + val + '">' + val + '</a>';
+          }
+
+          $select.after(clickTmpl);
+
         }
+
       });
     },
 
     change: function (e) {
       var $target = $(e.target);
       var widgetValue = $target.val();
-      var location = window.location;
-      var isInSlideout = $target.closest('.qor-slideout').size();
+      var isInSlideout = $('.qor-slideout').is(':visible');
 
       if (!$target.is(TARGET_WIDGET)) {
         return;
       }
-
-      if (isInSlideout){
-        var clickClass = '.qor-widget-' + widgetValue;
-        $(clickClass).click();
+      var clickClass = '.qor-widget-' + widgetValue;
+      if (isInSlideout) {
+        $(clickClass).trigger('click');
       } else {
-
-        if (widgetValue) {
-          location.search = 'widget_type=' + widgetValue;
-        }
-
+        location.href = $(clickClass).prop('href');
       }
+
+      return false;
     },
 
     destroy: function () {

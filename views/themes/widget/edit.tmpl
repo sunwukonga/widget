@@ -3,7 +3,7 @@
 {{$result := .Result.Widget}}
 {{$resource := .Resource}}
 
-<div class="qor-layout__tab" data-toggle="qor.tab">
+<div class="qor-layout__tab" data-scope-name="widget_scope" data-scope-active="{{.Context.Request.URL.Query.Get "widget_scope"}}" data-toggle="qor.tab">
   <div class="mdl-layout qor-layout__tab-container">
 
     {{if $availableScopes}}
