@@ -45,6 +45,7 @@ func (wc widgetController) Update(context *admin.Context) {
 	}
 
 	if context.HasError() {
+		context.Writer.WriteHeader(admin.HTTPUnprocessableEntity)
 		context.Execute("edit", map[string]interface{}{"Scopes": scopes, "Widget": widgetSetting})
 	} else {
 		http.Redirect(context.Writer, context.Request, context.Request.URL.Path, http.StatusFound)
