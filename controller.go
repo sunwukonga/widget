@@ -87,7 +87,7 @@ func (wc widgetController) getWidget(context *admin.Context) (interface{}, []str
 	err := context.GetDB().First(result, "name = ? AND scope = ?", context.ResourceID, scope).Error
 
 	if widgetType := context.Request.URL.Query().Get("widget_type"); widgetType != "" {
-		if serializableMeta, ok := result.(serializable_meta.SerializableMetaInterface); ok {
+		if serializableMeta, ok := result.(serializable_meta.SerializableMetaInterface); ok && serializableMeta.GetSerializableArgumentKind() != widgetType {
 			serializableMeta.SetSerializableArgumentKind(widgetType)
 			serializableMeta.SetSerializableArgumentValue(nil)
 		}
