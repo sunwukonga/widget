@@ -10,13 +10,26 @@ import (
 
 // QorWidgetSetting default qor widget setting struct
 type QorWidgetSetting struct {
-	Name      string `gorm:"primary_key"`
-	Scope     string `gorm:"primary_key;default:'default'"`
-	GroupName string
-	Template  string
+	Name       string `gorm:"primary_key"`
+	Scope      string `gorm:"primary_key;default:'default'"`
+	WidgetType string
+	GroupName  string
+	Template   string
 	serializable_meta.SerializableMeta
 	CreatedAt time.Time
 	UpdatedAt time.Time
+}
+
+func (widgetSetting *QorWidgetSetting) GetSerializableArgumentKind() string {
+	if widgetSetting.WidgetType != "" {
+		return widgetSetting.WidgetType
+	}
+	return widgetSetting.Kind
+}
+
+func (widgetSetting *QorWidgetSetting) SetSerializableArgumentKind(name string) {
+	widgetSetting.WidgetType = name
+	widgetSetting.Kind = name
 }
 
 // GetTemplate get used widget template
