@@ -33,7 +33,7 @@ func (widgets *Widgets) Render(widgetName string, widgetsGroupNameOrWidgetName s
 
 	if setting := findSettingByName(widgets.Config.DB, widgetName, visibleScopes, widgetsGroupNameOrWidgetName); setting != nil {
 		var (
-			widgetObj     = GetWidget(setting.Kind)
+			widgetObj     = GetWidget(setting.GetSerializableArgumentKind())
 			widgetSetting = widgetObj.Context(context, setting.GetSerializableArgument(setting))
 			url           = widgets.settingEditURL(setting)
 		)

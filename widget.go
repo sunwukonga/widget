@@ -98,7 +98,7 @@ func (widgets *Widgets) ConfigureQorResource(res resource.Resourcer) {
 					}
 
 					if setting, ok := result.(*QorWidgetSetting); ok {
-						return GetWidget(setting.Kind).Name
+						return GetWidget(setting.GetSerializableArgumentKind()).Name
 					}
 
 					return ""
@@ -114,14 +114,14 @@ func (widgets *Widgets) ConfigureQorResource(res resource.Resourcer) {
 						}
 
 						if len(results) == 0 {
-							results = append(results, []string{setting.Kind, setting.Kind})
+							results = append(results, []string{setting.GetSerializableArgumentKind(), setting.GetSerializableArgumentKind()})
 						}
 					}
 					return
 				},
 				Setter: func(result interface{}, metaValue *resource.MetaValue, context *qor.Context) {
 					if setting, ok := result.(*QorWidgetSetting); ok {
-						setting.Kind = utils.ToString(metaValue.Value)
+						setting.SetSerializableArgumentKind(utils.ToString(metaValue.Value))
 					}
 				},
 			})
@@ -136,7 +136,7 @@ func (widgets *Widgets) ConfigureQorResource(res resource.Resourcer) {
 				},
 				Collection: func(result interface{}, context *qor.Context) (results [][]string) {
 					if setting, ok := result.(*QorWidgetSetting); ok {
-						if widget := GetWidget(setting.Kind); widget != nil {
+						if widget := GetWidget(setting.GetSerializableArgumentKind()); widget != nil {
 							for _, value := range widget.Templates {
 								results = append(results, []string{value, value})
 							}

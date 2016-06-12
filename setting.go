@@ -21,7 +21,7 @@ type QorWidgetSetting struct {
 
 // GetTemplate get used widget template
 func (qorWidgetSetting QorWidgetSetting) GetTemplate() string {
-	if widget := GetWidget(qorWidgetSetting.Kind); widget != nil {
+	if widget := GetWidget(qorWidgetSetting.GetSerializableArgumentKind()); widget != nil {
 		for _, value := range widget.Templates {
 			if value == qorWidgetSetting.Template {
 				return value
@@ -66,7 +66,7 @@ func findSettingByName(db *gorm.DB, widgetName string, scopes []string, widgetsG
 	if setting == nil {
 		setting = &QorWidgetSetting{Name: widgetName, Scope: "default"}
 		setting.GroupName = widgetsGroupNameOrWidgetName
-		setting.Kind = widgetsGroupNameOrWidgetName
+		setting.SetSerializableArgumentKind(widgetsGroupNameOrWidgetName)
 		db.Create(setting)
 	} else if setting.GroupName != widgetsGroupNameOrWidgetName {
 		setting.GroupName = widgetsGroupNameOrWidgetName
@@ -78,5 +78,5 @@ func findSettingByName(db *gorm.DB, widgetName string, scopes []string, widgetsG
 
 // GetSerializableArgumentResource get setting's argument's resource
 func (qorWidgetSetting *QorWidgetSetting) GetSerializableArgumentResource() *admin.Resource {
-	return GetWidget(qorWidgetSetting.Kind).Setting
+	return GetWidget(qorWidgetSetting.GetSerializableArgumentKind()).Setting
 }
