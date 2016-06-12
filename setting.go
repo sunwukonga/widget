@@ -21,6 +21,11 @@ type QorWidgetSetting struct {
 	UpdatedAt time.Time
 }
 
+func (widgetSetting *QorWidgetSetting) BeforeCreate() {
+	now := time.Now()
+	widgetSetting.ActivatedAt = &now
+}
+
 func (widgetSetting *QorWidgetSetting) GetSerializableArgumentKind() string {
 	if widgetSetting.WidgetType != "" {
 		return widgetSetting.WidgetType
