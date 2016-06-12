@@ -73,6 +73,7 @@ func findSettingByName(db *gorm.DB, widgetName string, scopes []string, widgetsG
 		for _, s := range settings {
 			if s.Scope == "default" {
 				setting = &s
+				break
 			}
 		}
 	}
