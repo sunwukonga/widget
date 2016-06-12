@@ -79,7 +79,6 @@ func (widgets *Widgets) ConfigureQorResource(res resource.Resourcer) {
 				Valuer: func(result interface{}, context *qor.Context) interface{} {
 					return time.Now()
 				},
-				Permission: roles.Deny(roles.Update, roles.Anyone),
 			})
 			widgets.WidgetSettingResource.Meta(&admin.Meta{
 				Name: "Scope",

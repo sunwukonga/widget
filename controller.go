@@ -74,6 +74,18 @@ func (wc widgetController) getWidget(context *admin.Context) (interface{}, []str
 		widgetType      = context.Request.URL.Query().Get("widget_type")
 	)
 
+	if scope == "" {
+		scope = context.Request.Form.Get("QorResource.Scope")
+	}
+
+	if widgetType == "" {
+		widgetType = context.Request.Form.Get("QorResource.Kind")
+	}
+
+	if scope == "" {
+		scope = "default"
+	}
+
 	context.GetDB().Model(result).Where("name = ?", context.ResourceID).Order("activated_at").Find(&widgetSettings)
 
 	for _, setting := range widgetSettings {
