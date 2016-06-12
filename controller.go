@@ -65,28 +65,35 @@ func (wc widgetController) getWidget(context *admin.Context) (interface{}, []str
 	}
 
 	// show page
-	result := wc.Widgets.WidgetSettingResource.NewStruct()
-	scope := context.Request.URL.Query().Get("widget_scope")
+	var (
+		widgetSettings  []QorWidgetSetting
+		selectedSetting *QorWidgetSetting
+		scopes          []string
+		result          = wc.Widgets.WidgetSettingResource.NewStruct()
+		scope           = context.Request.URL.Query().Get("widget_scope")
+		widgetType      = context.Request.URL.Query().Get("widget_type")
+	)
 
-	var scopes []string
-	context.GetDB().Model(result).Where("name = ?", context.ResourceID).Pluck("scope", &scopes)
+	context.GetDB().Model(result).Where("name = ?", context.ResourceID).Order("activated_at").Find(&widgetSettings)
 
-	var hasScope bool
+	for _, setting := range widgetSettings {
+		if setting.Scope == scope {
+			selectedSetting = &setting
 
-	for _, s := range scopes {
-		if scope == s {
-			hasScope = true
-			break
+			if setting.WidgetType == widgetType {
+				selectedSetting = &setting
+				break
+			}
 		}
 	}
 
-	if !hasScope {
-		scope = "default"
+	if selectedSetting == nil {
+		selectedSetting = &QorWidgetSetting{Name: context.ResourceID, Scope: "default"}
 	}
 
-	err := context.GetDB().First(result, "name = ? AND scope = ?", context.ResourceID, scope).Error
+	err := context.GetDB().First(result, selectedSetting).Error
 
-	if widgetType := context.Request.URL.Query().Get("widget_type"); widgetType != "" {
+	if widgetType != "" {
 		if serializableMeta, ok := result.(serializable_meta.SerializableMetaInterface); ok && serializableMeta.GetSerializableArgumentKind() != widgetType {
 			serializableMeta.SetSerializableArgumentKind(widgetType)
 			serializableMeta.SetSerializableArgumentValue(nil)

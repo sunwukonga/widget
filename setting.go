@@ -10,11 +10,12 @@ import (
 
 // QorWidgetSetting default qor widget setting struct
 type QorWidgetSetting struct {
-	Name       string `gorm:"primary_key"`
-	Scope      string `gorm:"primary_key;default:'default'"`
-	WidgetType string
-	GroupName  string
-	Template   string
+	Name        string `gorm:"primary_key"`
+	WidgetType  string `gorm:"primary_key"`
+	Scope       string `gorm:"primary_key;default:'default'"`
+	GroupName   string
+	ActivatedAt *time.Time
+	Template    string
 	serializable_meta.SerializableMeta
 	CreatedAt time.Time
 	UpdatedAt time.Time
@@ -53,7 +54,7 @@ func findSettingByName(db *gorm.DB, widgetName string, scopes []string, widgetsG
 	var setting *QorWidgetSetting
 	var settings []QorWidgetSetting
 
-	db.Where("name = ? AND scope IN (?)", widgetName, append(scopes, "default")).Find(&settings)
+	db.Where("name = ? AND scope IN (?)", widgetName, append(scopes, "default")).Order("activated_at DESC").Find(&settings)
 
 	if len(settings) > 0 {
 	OUTTER:

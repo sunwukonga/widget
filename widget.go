@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"time"
 
 	"github.com/jinzhu/gorm"
 	"github.com/qor/admin"
@@ -72,6 +73,14 @@ func (widgets *Widgets) ConfigureQorResource(res resource.Resourcer) {
 			widgets.WidgetSettingResource = res.GetAdmin().NewResource(&QorWidgetSetting{}, &admin.Config{Name: res.Name, Permission: roles.Deny(roles.Create, roles.Anyone)})
 
 			widgets.WidgetSettingResource.Meta(&admin.Meta{Name: "Name", Permission: roles.Deny(roles.Update, roles.Anyone)})
+			widgets.WidgetSettingResource.Meta(&admin.Meta{
+				Name: "ActivatedAt",
+				Type: "hidden",
+				Valuer: func(result interface{}, context *qor.Context) interface{} {
+					return time.Now()
+				},
+				Permission: roles.Deny(roles.Update, roles.Anyone),
+			})
 			widgets.WidgetSettingResource.Meta(&admin.Meta{
 				Name: "Scope",
 				Type: "hidden",
@@ -148,7 +157,7 @@ func (widgets *Widgets) ConfigureQorResource(res resource.Resourcer) {
 
 			widgets.WidgetSettingResource.IndexAttrs("ID", "Name", "Template", "Kind", "CreatedAt", "UpdatedAt")
 			widgets.WidgetSettingResource.EditAttrs(
-				"ID", "Scope", "Widgets", "Template",
+				"ID", "Scope", "ActivatedAt", "Widgets", "Template",
 				&admin.Section{
 					Title: "Settings",
 					Rows:  [][]string{{"Kind"}, {"SerializableMeta"}},
