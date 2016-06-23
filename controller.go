@@ -103,7 +103,7 @@ func (wc widgetController) getWidget(context *admin.Context) (interface{}, []str
 		selectedSetting = &QorWidgetSetting{Name: context.ResourceID, Scope: "default"}
 	}
 
-	err := context.GetDB().First(result, selectedSetting).Error
+	err := context.GetDB().Order("activated_at DESC").First(result, selectedSetting).Error
 
 	if widgetType != "" {
 		if serializableMeta, ok := result.(serializable_meta.SerializableMetaInterface); ok && serializableMeta.GetSerializableArgumentKind() != widgetType {

@@ -154,7 +154,7 @@ func (widgets *Widgets) ConfigureQorResource(res resource.Resourcer) {
 				},
 			})
 
-			widgets.WidgetSettingResource.IndexAttrs("ID", "Name", "Template", "Kind", "CreatedAt", "UpdatedAt")
+			widgets.WidgetSettingResource.IndexAttrs("ID", "Name", "CreatedAt", "UpdatedAt")
 			widgets.WidgetSettingResource.EditAttrs(
 				"ID", "Scope", "ActivatedAt", "Widgets", "Template",
 				&admin.Section{
