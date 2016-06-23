@@ -59,7 +59,7 @@ func (wc widgetController) InlineEdit(context *admin.Context) {
 func (wc widgetController) getWidget(context *admin.Context) (interface{}, []string, error) {
 	if context.ResourceID == "" {
 		// index page
-		context.SetDB(context.GetDB().Where("scope = ?", "default"))
+		context.SetDB(context.GetDB().Where("scope = ?", "default").Order("activated_at DESC").Group("name"))
 		results, err := context.FindMany()
 		return results, []string{}, err
 	}
@@ -90,10 +90,10 @@ func (wc widgetController) getWidget(context *admin.Context) (interface{}, []str
 
 	for _, setting := range widgetSettings {
 		if setting.Scope == scope {
-			selectedSetting = &setting
+			selectedSetting = &QorWidgetSetting{Name: context.ResourceID, Scope: scope}
 
 			if setting.WidgetType == widgetType {
-				selectedSetting = &setting
+				selectedSetting = &QorWidgetSetting{Name: context.ResourceID, Scope: scope, WidgetType: widgetType}
 				break
 			}
 		}
