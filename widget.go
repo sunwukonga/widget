@@ -56,13 +56,14 @@ func (widgets *Widgets) RegisterWidgetsGroup(group *WidgetsGroup) {
 }
 
 // ConfigureQorResource a method used to config Widget for qor admin
-func (widgets *Widgets) ConfigureQorResource(res resource.Resourcer) {
+func (widgets *Widgets) ConfigureQorResourceBeforeInitialize(res resource.Resourcer) {
 	if res, ok := res.(*admin.Resource); ok {
 		// register view paths
 		res.GetAdmin().RegisterViewPath("github.com/qor/widget/views")
 
 		// set resources
 		widgets.Resource = res
+		res.Config.Invisible = true
 
 		// set setting resource
 		if widgets.WidgetSettingResource == nil {
@@ -70,9 +71,6 @@ func (widgets *Widgets) ConfigureQorResource(res resource.Resourcer) {
 		} else {
 			widgets.WidgetSettingResource.Permission = roles.Deny(roles.Create, roles.Anyone)
 		}
-
-		// use widget theme
-		res.UseTheme("widget")
 
 		for funcName, fc := range funcMap {
 			res.GetAdmin().RegisterFuncMap(funcName, fc)
@@ -82,10 +80,10 @@ func (widgets *Widgets) ConfigureQorResource(res resource.Resourcer) {
 		controller := widgetController{Widgets: widgets}
 		router := res.GetAdmin().GetRouter()
 		router.Get(widgets.WidgetSettingResource.ToParam(), controller.Index)
-		router.Get(fmt.Sprintf("%v/inline-edit", widgets.WidgetSettingResource.ToParam()), controller.InlineEdit)
 		router.Get(fmt.Sprintf("%v/%v", widgets.WidgetSettingResource.ToParam(), widgets.WidgetSettingResource.ParamIDName()), controller.Edit)
 		router.Get(fmt.Sprintf("%v/%v/edit", widgets.WidgetSettingResource.ToParam(), widgets.WidgetSettingResource.ParamIDName()), controller.Edit)
 		router.Put(fmt.Sprintf("%v/%v", widgets.WidgetSettingResource.ToParam(), widgets.WidgetSettingResource.ParamIDName()), controller.Update)
+		router.Get(fmt.Sprintf("%v/inline-edit", res.ToParam()), controller.InlineEdit)
 	}
 }
 
