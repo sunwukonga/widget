@@ -25,6 +25,10 @@ type QorWidgetSetting struct {
 	UpdatedAt time.Time
 }
 
+func (widgetSetting *QorWidgetSetting) ResourceName() string {
+	return "Widget Setting"
+}
+
 func (widgetSetting *QorWidgetSetting) BeforeCreate() {
 	now := time.Now()
 	widgetSetting.ActivatedAt = &now
@@ -196,9 +200,10 @@ func (qorWidgetSetting *QorWidgetSetting) ConfigureQorResource(res resource.Reso
 
 		res.UseTheme("widget")
 
-		res.IndexAttrs("ID", "Name", "CreatedAt", "UpdatedAt")
+		res.IndexAttrs("Name", "CreatedAt", "UpdatedAt")
+		res.ShowAttrs("Name", "Scope", "WidgetType", "Template", "Value", "CreatedAt", "UpdatedAt")
 		res.EditAttrs(
-			"ID", "Scope", "ActivatedAt", "Widgets", "Template",
+			"Scope", "ActivatedAt", "Widgets", "Template",
 			&admin.Section{
 				Title: "Settings",
 				Rows:  [][]string{{"Kind"}, {"SerializableMeta"}},
