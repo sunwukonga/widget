@@ -5,6 +5,10 @@ import (
 
 	"github.com/jinzhu/gorm"
 	"github.com/qor/admin"
+	"github.com/qor/qor"
+	"github.com/qor/qor/resource"
+	"github.com/qor/qor/utils"
+	"github.com/qor/roles"
 	"github.com/qor/serializable_meta"
 )
 
@@ -99,4 +103,106 @@ func findSettingByName(db *gorm.DB, widgetName string, scopes []string, widgetsG
 // GetSerializableArgumentResource get setting's argument's resource
 func (qorWidgetSetting *QorWidgetSetting) GetSerializableArgumentResource() *admin.Resource {
 	return GetWidget(qorWidgetSetting.GetSerializableArgumentKind()).Setting
+}
+
+// ConfigureQorResource a method used to config Widget for qor admin
+func (qorWidgetSetting *QorWidgetSetting) ConfigureQorResource(res resource.Resourcer) {
+	if res, ok := res.(*admin.Resource); ok {
+		res.Meta(&admin.Meta{Name: "Name", Permission: roles.Deny(roles.Update, roles.Anyone)})
+
+		res.Meta(&admin.Meta{
+			Name: "ActivatedAt",
+			Type: "hidden",
+			Valuer: func(result interface{}, context *qor.Context) interface{} {
+				return time.Now()
+			},
+		})
+
+		res.Meta(&admin.Meta{
+			Name: "Scope",
+			Type: "hidden",
+			Valuer: func(result interface{}, context *qor.Context) interface{} {
+				if scope := context.Request.URL.Query().Get("widget_scope"); scope != "" {
+					return scope
+				}
+
+				if setting, ok := result.(*QorWidgetSetting); ok {
+					if setting.Scope != "" {
+						return setting.Scope
+					}
+				}
+
+				return "default"
+			},
+		})
+
+		res.Meta(&admin.Meta{
+			Name: "Widgets",
+			Type: "select_one",
+			Valuer: func(result interface{}, context *qor.Context) interface{} {
+				if typ := context.Request.URL.Query().Get("widget_type"); typ != "" {
+					return typ
+				}
+
+				if setting, ok := result.(*QorWidgetSetting); ok {
+					return GetWidget(setting.GetSerializableArgumentKind()).Name
+				}
+
+				return ""
+			},
+			Collection: func(result interface{}, context *qor.Context) (results [][]string) {
+				if setting, ok := result.(*QorWidgetSetting); ok {
+					for _, group := range registeredWidgetsGroup {
+						if group.Name == setting.GroupName {
+							for _, widget := range group.Widgets {
+								results = append(results, []string{widget, widget})
+							}
+						}
+					}
+
+					if len(results) == 0 {
+						results = append(results, []string{setting.GetSerializableArgumentKind(), setting.GetSerializableArgumentKind()})
+					}
+				}
+				return
+			},
+			Setter: func(result interface{}, metaValue *resource.MetaValue, context *qor.Context) {
+				if setting, ok := result.(*QorWidgetSetting); ok {
+					setting.SetSerializableArgumentKind(utils.ToString(metaValue.Value))
+				}
+			},
+		})
+
+		res.Meta(&admin.Meta{
+			Name: "Template",
+			Type: "select_one",
+			Valuer: func(result interface{}, context *qor.Context) interface{} {
+				if setting, ok := result.(*QorWidgetSetting); ok {
+					return setting.GetTemplate()
+				}
+				return ""
+			},
+			Collection: func(result interface{}, context *qor.Context) (results [][]string) {
+				if setting, ok := result.(*QorWidgetSetting); ok {
+					if widget := GetWidget(setting.GetSerializableArgumentKind()); widget != nil {
+						for _, value := range widget.Templates {
+							results = append(results, []string{value, value})
+						}
+					}
+				}
+				return
+			},
+		})
+
+		res.UseTheme("widget")
+
+		res.IndexAttrs("ID", "Name", "CreatedAt", "UpdatedAt")
+		res.EditAttrs(
+			"ID", "Scope", "ActivatedAt", "Widgets", "Template",
+			&admin.Section{
+				Title: "Settings",
+				Rows:  [][]string{{"Kind"}, {"SerializableMeta"}},
+			},
+		)
+	}
 }
