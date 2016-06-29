@@ -15,48 +15,25 @@ import (
 )
 
 // Render find widget by name, render it based on current context
-func (widgets *Widgets) Render(widgetName string, widgetsGroupNameOrWidgetName string, context *Context, enableInlineEdit ...bool) template.HTML {
-	var enabledInlineEdit bool
+func (widgets *Widgets) Render(widgetName string, widgetGroupName string, c *Context, enableInlineEdit ...bool) template.HTML {
+	return widgets.NewContext(nil).Render(widgetName, widgetGroupName)
+}
+
+func (widgets *Widgets) NewContext(context *Context) *Context {
 	if context == nil {
-		context = NewContext(map[string]interface{}{})
+		context = &Context{}
 	}
 
-	for _, e := range enableInlineEdit {
-		enabledInlineEdit = e
+	if context.DB == nil {
+		context.DB = widgets.Config.DB
 	}
 
-	var visibleScopes []string
-	for _, scope := range registeredScopes {
-		if scope.Visible(context) {
-			visibleScopes = append(visibleScopes, scope.ToParam())
-		}
+	if context.Options == nil {
+		context.Options = map[string]interface{}{}
 	}
 
-	if setting := findSettingByName(widgets.Config.DB, widgetName, visibleScopes, widgetsGroupNameOrWidgetName); setting != nil {
-		var (
-			widgetObj     = GetWidget(setting.GetSerializableArgumentKind())
-			widgetSetting = widgetObj.Context(context, setting.GetSerializableArgument(setting))
-			url           = widgets.settingEditURL(setting)
-		)
-
-		if enabledInlineEdit {
-			prefix := widgets.Resource.GetAdmin().GetRouter().Prefix
-
-			return template.HTML(fmt.Sprintf(
-				"<script data-prefix=\"%v\" src=\"%v/assets/javascripts/widget_check.js?theme=widget\"></script><div class=\"qor-widget qor-widget-%v\" data-widget-inline-edit-url=\"%v\" data-url=\"%v\">\n%v\n</div>",
-				prefix,
-				prefix,
-				utils.ToParamString(widgetObj.Name),
-				fmt.Sprintf("%v/%v/inline-edit", prefix, widgets.Resource.ToParam()),
-				url,
-				widgetObj.Render(widgetSetting, setting.GetTemplate(), url),
-			))
-		}
-
-		return widgetObj.Render(widgetSetting, setting.GetTemplate(), url)
-	}
-
-	return template.HTML("")
+	context.Widgets = widgets
+	return context
 }
 
 func (widgets *Widgets) settingEditURL(setting QorWidgetSettingInterface) string {
