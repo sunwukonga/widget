@@ -54,25 +54,28 @@ func TestRender(t *testing.T) {
 		},
 	})
 
-	html := Widgets.Render("HomeBanner", "Banner", nil)
+	setting := &widget.QorWidgetSetting{}
+	db.Where(widget.QorWidgetSetting{Name: "HomeBanner", WidgetType: "Banner"}).FirstOrInit(setting)
+	db.Create(setting)
+
+	html := Widgets.Render("HomeBanner", "Banner")
 	if !strings.Contains(string(html), "Hello, \n<h1></h1>\n<h2></h2>\n") {
 		t.Errorf(color.RedString(fmt.Sprintf("\nWidget Render TestCase #%d: Failure Result:\n %s\n", 1, html)))
 	}
 
-	widgetContext := widget.NewContext(map[string]interface{}{
-		"CurrentUser": "Qortex",
+	widgetContext := Widgets.NewContext(&widget.Context{
+		Options: map[string]interface{}{"CurrentUser": "Qortex"},
 	})
-	html = Widgets.Render("HomeBanner", "Banner", widgetContext)
+	html = widgetContext.Render("HomeBanner", "Banner")
 	if !strings.Contains(string(html), "Hello, Qortex\n<h1></h1>\n<h2></h2>\n") {
 		t.Errorf(color.RedString(fmt.Sprintf("\nWidget Render TestCase #%d: Failure Result:\n %s\n", 2, html)))
 	}
 
-	setting := widget.QorWidgetSetting{}
-	db.Where("name = ? AND kind = ?", "HomeBanner", "Banner").First(&setting)
+	db.Where(widget.QorWidgetSetting{Name: "HomeBanner", WidgetType: "Banner"}).FirstOrInit(setting)
 	setting.SetSerializableArgumentValue(&bannerArgument{Title: "Title", SubTitle: "SubTitle"})
-	db.Save(&setting)
+	db.Save(setting)
 
-	html = Widgets.Render("HomeBanner", "Banner", widgetContext)
+	html = widgetContext.Render("HomeBanner", "Banner")
 	if !strings.Contains(string(html), "Hello, Qortex\n<h1>Title</h1>\n<h2>SubTitle</h2>\n") {
 		t.Errorf(color.RedString(fmt.Sprintf("\nWidget Render TestCase #%d: Failure Result:\n %s\n", 3, html)))
 	}
