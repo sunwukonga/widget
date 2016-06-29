@@ -3,6 +3,7 @@ package widget
 import (
 	"fmt"
 	"html/template"
+	"reflect"
 
 	"github.com/jinzhu/gorm"
 	"github.com/qor/qor/utils"
@@ -49,11 +50,12 @@ func (context *Context) GetDB() *gorm.DB {
 	return context.Widgets.Config.DB
 }
 
+// Render render widget based on context
 func (context *Context) Render(widgetName string, widgetGroupName string) template.HTML {
 	var (
-		visibleScopes []string
-		widgets       = context.Widgets
-		db            = context.GetDB()
+		visibleScopes         []string
+		widgets               = context.Widgets
+		widgetSettingResource = widgets.WidgetSettingResource
 	)
 
 	for _, scope := range registeredScopes {
@@ -62,11 +64,12 @@ func (context *Context) Render(widgetName string, widgetGroupName string) templa
 		}
 	}
 
-	if setting := findSettingByName(db, widgetName, visibleScopes, widgetGroupName); setting != nil {
+	if setting := context.findWidgetSetting(widgetName, append(visibleScopes, "default"), widgetGroupName); setting != nil {
 		var (
+			prefix        = widgetSettingResource.GetAdmin().GetRouter().Prefix
 			widgetObj     = GetWidget(setting.GetSerializableArgumentKind())
 			widgetSetting = widgetObj.Context(context, setting.GetSerializableArgument(setting))
-			url           = widgets.settingEditURL(setting)
+			inlineEditURL = fmt.Sprintf("%v/%v/%v/edit?widget_scope=%v", prefix, widgetSettingResource.ToParam(), setting.GetWidgetName(), setting.GetScope())
 		)
 
 		if context.InlineEdit {
@@ -78,13 +81,50 @@ func (context *Context) Render(widgetName string, widgetGroupName string) templa
 				prefix,
 				utils.ToParamString(widgetObj.Name),
 				fmt.Sprintf("%v/%v/inline-edit", prefix, widgets.Resource.ToParam()),
-				url,
-				widgetObj.Render(widgetSetting, setting.GetTemplate(), url),
+				inlineEditURL,
+				widgetObj.Render(widgetSetting, setting.GetTemplate()),
 			))
 		}
 
-		return widgetObj.Render(widgetSetting, setting.GetTemplate(), url)
+		return widgetObj.Render(widgetSetting, setting.GetTemplate())
 	}
 
 	return template.HTML("")
+}
+
+func (context *Context) findWidgetSetting(widgetName string, scopes []string, widgetGroupName string) QorWidgetSettingInterface {
+	var (
+		db                    = context.GetDB()
+		widgetSettingResource = context.Widgets.WidgetSettingResource
+		setting               QorWidgetSettingInterface
+		settings              = widgetSettingResource.NewSlice()
+	)
+
+	db.Where("name = ? AND scope IN (?)", widgetName, scopes).Order("activated_at DESC").Find(settings)
+
+	settingsValue := reflect.Indirect(reflect.ValueOf(settings))
+	if settingsValue.Len() > 0 {
+	OUTTER:
+		for _, scope := range scopes {
+			for i := 0; i < settingsValue.Len(); i++ {
+				s := settingsValue.Index(i).Interface().(QorWidgetSettingInterface)
+				if s.GetScope() == scope {
+					setting = s
+					break OUTTER
+				}
+			}
+		}
+	}
+
+	if setting == nil {
+		setting = widgetSettingResource.NewStruct().(QorWidgetSettingInterface)
+		setting.SetGroupName(widgetGroupName)
+		setting.SetSerializableArgumentKind(widgetGroupName)
+		db.Create(setting)
+	} else if setting.GetGroupName() != widgetGroupName {
+		setting.SetGroupName(widgetGroupName)
+		db.Save(setting)
+	}
+
+	return setting
 }
