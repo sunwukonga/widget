@@ -3,7 +3,6 @@ package widget
 import (
 	"time"
 
-	"github.com/jinzhu/gorm"
 	"github.com/qor/admin"
 	"github.com/qor/qor"
 	"github.com/qor/qor/resource"
@@ -12,54 +11,15 @@ import (
 	"github.com/qor/serializable_meta"
 )
 
-func findSettingByName(db *gorm.DB, widgetName string, scopes []string, widgetsGroupNameOrWidgetName string) *QorWidgetSetting {
-	var setting *QorWidgetSetting
-	var settings []QorWidgetSetting
-
-	db.Where("name = ? AND scope IN (?)", widgetName, append(scopes, "default")).Order("activated_at DESC").Find(&settings)
-
-	if len(settings) > 0 {
-	OUTTER:
-		for _, scope := range scopes {
-			for _, s := range settings {
-				if s.Scope == scope {
-					setting = &s
-					break OUTTER
-				}
-			}
-		}
-	}
-
-	// use default setting
-	if setting == nil {
-		for _, s := range settings {
-			if s.Scope == "default" {
-				setting = &s
-				break
-			}
-		}
-	}
-
-	if setting == nil {
-		setting = &QorWidgetSetting{Name: widgetName, Scope: "default"}
-		setting.GroupName = widgetsGroupNameOrWidgetName
-		setting.SetSerializableArgumentKind(widgetsGroupNameOrWidgetName)
-		db.Create(setting)
-	} else if setting.GroupName != widgetsGroupNameOrWidgetName {
-		setting.GroupName = widgetsGroupNameOrWidgetName
-		db.Save(setting)
-	}
-
-	return setting
-}
-
 type QorWidgetSettingInterface interface {
-	SetGroupName(string)
+	GetWidgetName() string
+	SetWidgetName(string)
 	GetGroupName() string
-	SetScope(string)
+	SetGroupName(string)
 	GetScope() string
-	SetTemplate(string)
+	SetScope(string)
 	GetTemplate() string
+	SetTemplate(string)
 	serializable_meta.SerializableMetaInterface
 }
 
@@ -95,6 +55,16 @@ func (widgetSetting *QorWidgetSetting) GetSerializableArgumentKind() string {
 func (widgetSetting *QorWidgetSetting) SetSerializableArgumentKind(name string) {
 	widgetSetting.WidgetType = name
 	widgetSetting.Kind = name
+}
+
+// GetWidgetName get widget setting's group name
+func (qorWidgetSetting QorWidgetSetting) GetWidgetName() string {
+	return qorWidgetSetting.Name
+}
+
+// SetWidgetName set widget setting's group name
+func (qorWidgetSetting *QorWidgetSetting) SetWidgetName(name string) {
+	qorWidgetSetting.Name = name
 }
 
 // GetGroupName get widget setting's group name

@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/jinzhu/gorm"
 	"github.com/qor/qor/utils"
 )
 
@@ -48,19 +49,19 @@ func (widgets *Widgets) Render(widgetName string, widgetsGroupNameOrWidgetName s
 				utils.ToParamString(widgetObj.Name),
 				fmt.Sprintf("%v/%v/inline-edit", prefix, widgets.Resource.ToParam()),
 				url,
-				widgetObj.Render(widgetSetting, setting.Template, url),
+				widgetObj.Render(widgetSetting, setting.GetTemplate(), url),
 			))
 		}
 
-		return widgetObj.Render(widgetSetting, setting.Template, url)
+		return widgetObj.Render(widgetSetting, setting.GetTemplate(), url)
 	}
 
 	return template.HTML("")
 }
 
-func (widgets *Widgets) settingEditURL(setting *QorWidgetSetting) string {
+func (widgets *Widgets) settingEditURL(setting QorWidgetSettingInterface) string {
 	prefix := widgets.WidgetSettingResource.GetAdmin().GetRouter().Prefix
-	return fmt.Sprintf("%v/%v/%v/edit?widget_scope=%v", prefix, widgets.WidgetSettingResource.ToParam(), setting.Name, setting.Scope)
+	return fmt.Sprintf("%v/%v/%v/edit?widget_scope=%v", prefix, widgets.WidgetSettingResource.ToParam(), setting.GetWidgetName(), setting.GetScope())
 }
 
 // FuncMap return view functions map
@@ -145,4 +146,45 @@ func (w *Widget) findTemplate(layouts ...string) (string, error) {
 		}
 	}
 	return "", fmt.Errorf("template not found: %v", layouts)
+}
+
+func findSettingByName(db *gorm.DB, widgetName string, scopes []string, widgetsGroupNameOrWidgetName string) QorWidgetSettingInterface {
+	var setting *QorWidgetSetting
+	var settings []QorWidgetSetting
+
+	db.Where("name = ? AND scope IN (?)", widgetName, append(scopes, "default")).Order("activated_at DESC").Find(&settings)
+
+	if len(settings) > 0 {
+	OUTTER:
+		for _, scope := range scopes {
+			for _, s := range settings {
+				if s.Scope == scope {
+					setting = &s
+					break OUTTER
+				}
+			}
+		}
+	}
+
+	// use default setting
+	if setting == nil {
+		for _, s := range settings {
+			if s.Scope == "default" {
+				setting = &s
+				break
+			}
+		}
+	}
+
+	if setting == nil {
+		setting = &QorWidgetSetting{Name: widgetName, Scope: "default"}
+		setting.GroupName = widgetsGroupNameOrWidgetName
+		setting.SetSerializableArgumentKind(widgetsGroupNameOrWidgetName)
+		db.Create(setting)
+	} else if setting.GroupName != widgetsGroupNameOrWidgetName {
+		setting.GroupName = widgetsGroupNameOrWidgetName
+		db.Save(setting)
+	}
+
+	return setting
 }
