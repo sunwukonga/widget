@@ -94,6 +94,10 @@
         return;
       }
       var clickClass = '.qor-widget-' + widgetValue;
+
+      $.fn.qorSlideoutBeforeHide = null;
+      window.onbeforeunload = null;
+
       if (isInSlideout) {
         $(clickClass).trigger('click');
       } else {
