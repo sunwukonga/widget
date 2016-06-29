@@ -12,6 +12,47 @@ import (
 	"github.com/qor/serializable_meta"
 )
 
+func findSettingByName(db *gorm.DB, widgetName string, scopes []string, widgetsGroupNameOrWidgetName string) *QorWidgetSetting {
+	var setting *QorWidgetSetting
+	var settings []QorWidgetSetting
+
+	db.Where("name = ? AND scope IN (?)", widgetName, append(scopes, "default")).Order("activated_at DESC").Find(&settings)
+
+	if len(settings) > 0 {
+	OUTTER:
+		for _, scope := range scopes {
+			for _, s := range settings {
+				if s.Scope == scope {
+					setting = &s
+					break OUTTER
+				}
+			}
+		}
+	}
+
+	// use default setting
+	if setting == nil {
+		for _, s := range settings {
+			if s.Scope == "default" {
+				setting = &s
+				break
+			}
+		}
+	}
+
+	if setting == nil {
+		setting = &QorWidgetSetting{Name: widgetName, Scope: "default"}
+		setting.GroupName = widgetsGroupNameOrWidgetName
+		setting.SetSerializableArgumentKind(widgetsGroupNameOrWidgetName)
+		db.Create(setting)
+	} else if setting.GroupName != widgetsGroupNameOrWidgetName {
+		setting.GroupName = widgetsGroupNameOrWidgetName
+		db.Save(setting)
+	}
+
+	return setting
+}
+
 type QorWidgetSettingInterface interface {
 	SetGroupName(string)
 	GetGroupName() string
@@ -98,47 +139,6 @@ func (qorWidgetSetting *QorWidgetSetting) SetTemplate(template string) {
 	qorWidgetSetting.Template = template
 }
 
-func findSettingByName(db *gorm.DB, widgetName string, scopes []string, widgetsGroupNameOrWidgetName string) *QorWidgetSetting {
-	var setting *QorWidgetSetting
-	var settings []QorWidgetSetting
-
-	db.Where("name = ? AND scope IN (?)", widgetName, append(scopes, "default")).Order("activated_at DESC").Find(&settings)
-
-	if len(settings) > 0 {
-	OUTTER:
-		for _, scope := range scopes {
-			for _, s := range settings {
-				if s.Scope == scope {
-					setting = &s
-					break OUTTER
-				}
-			}
-		}
-	}
-
-	// use default setting
-	if setting == nil {
-		for _, s := range settings {
-			if s.Scope == "default" {
-				setting = &s
-				break
-			}
-		}
-	}
-
-	if setting == nil {
-		setting = &QorWidgetSetting{Name: widgetName, Scope: "default"}
-		setting.GroupName = widgetsGroupNameOrWidgetName
-		setting.SetSerializableArgumentKind(widgetsGroupNameOrWidgetName)
-		db.Create(setting)
-	} else if setting.GroupName != widgetsGroupNameOrWidgetName {
-		setting.GroupName = widgetsGroupNameOrWidgetName
-		db.Save(setting)
-	}
-
-	return setting
-}
-
 // GetSerializableArgumentResource get setting's argument's resource
 func (qorWidgetSetting *QorWidgetSetting) GetSerializableArgumentResource() *admin.Resource {
 	return GetWidget(qorWidgetSetting.GetSerializableArgumentKind()).Setting
@@ -181,9 +181,8 @@ func (qorWidgetSetting *QorWidgetSetting) ConfigureQorResource(res resource.Reso
 		})
 
 		res.Meta(&admin.Meta{
-			Name:  "WidgetType",
-			Label: "Widgets",
-			Type:  "select_one",
+			Name: "Widgets",
+			Type: "select_one",
 			Valuer: func(result interface{}, context *qor.Context) interface{} {
 				if typ := context.Request.URL.Query().Get("widget_type"); typ != "" {
 					return typ
