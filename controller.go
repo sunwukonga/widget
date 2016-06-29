@@ -2,6 +2,7 @@ package widget
 
 import (
 	"net/http"
+	"reflect"
 
 	"github.com/qor/admin"
 	"github.com/qor/responder"
@@ -66,7 +67,7 @@ func (wc widgetController) getWidget(context *admin.Context) (interface{}, []str
 
 	// show page
 	var (
-		widgetSettings  []QorWidgetSetting
+		widgetSettings  = wc.Widgets.WidgetSettingResource.NewSlice()
 		selectedSetting *QorWidgetSetting
 		scopes          []string
 		result          = wc.Widgets.WidgetSettingResource.NewStruct()
@@ -86,13 +87,15 @@ func (wc widgetController) getWidget(context *admin.Context) (interface{}, []str
 		scope = "default"
 	}
 
-	context.GetDB().Model(result).Where("name = ?", context.ResourceID).Order("activated_at").Find(&widgetSettings)
+	context.GetDB().Model(result).Where("name = ?", context.ResourceID).Order("activated_at").Find(widgetSettings)
 
-	for _, setting := range widgetSettings {
-		if setting.Scope == scope {
+	widgetSettingsValues := reflect.Indirect(reflect.ValueOf(widgetSettings))
+	for i := 0; i < widgetSettingsValues.Len(); i++ {
+		setting := widgetSettingsValues.Index(i).Interface().(QorWidgetSettingInterface)
+		if setting.GetScope() == scope {
 			selectedSetting = &QorWidgetSetting{Name: context.ResourceID, Scope: scope}
 
-			if setting.WidgetType == widgetType {
+			if setting.GetSerializableArgumentKind() == widgetType {
 				selectedSetting = &QorWidgetSetting{Name: context.ResourceID, Scope: scope, WidgetType: widgetType}
 				break
 			}

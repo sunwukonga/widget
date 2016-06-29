@@ -14,53 +14,25 @@ import (
 )
 
 // Render find widget by name, render it based on current context
-func (widgets *Widgets) Render(widgetName string, widgetsGroupNameOrWidgetName string, context *Context, enableInlineEdit ...bool) template.HTML {
-	var enabledInlineEdit bool
-	if context == nil {
-		context = NewContext(map[string]interface{}{})
-	}
-
-	for _, e := range enableInlineEdit {
-		enabledInlineEdit = e
-	}
-
-	var visibleScopes []string
-	for _, scope := range registeredScopes {
-		if scope.Visible(context) {
-			visibleScopes = append(visibleScopes, scope.ToParam())
-		}
-	}
-
-	if setting := findSettingByName(widgets.Config.DB, widgetName, visibleScopes, widgetsGroupNameOrWidgetName); setting != nil {
-		var (
-			widgetObj     = GetWidget(setting.GetSerializableArgumentKind())
-			widgetSetting = widgetObj.Context(context, setting.GetSerializableArgument(setting))
-			url           = widgets.settingEditURL(setting)
-		)
-
-		if enabledInlineEdit {
-			prefix := widgets.Resource.GetAdmin().GetRouter().Prefix
-
-			return template.HTML(fmt.Sprintf(
-				"<script data-prefix=\"%v\" src=\"%v/assets/javascripts/widget_check.js?theme=widget\"></script><div class=\"qor-widget qor-widget-%v\" data-widget-inline-edit-url=\"%v\" data-url=\"%v\">\n%v\n</div>",
-				prefix,
-				prefix,
-				utils.ToParamString(widgetObj.Name),
-				fmt.Sprintf("%v/%v/inline-edit", prefix, widgets.Resource.ToParam()),
-				url,
-				widgetObj.Render(widgetSetting, setting.Template, url),
-			))
-		}
-
-		return widgetObj.Render(widgetSetting, setting.Template, url)
-	}
-
-	return template.HTML("")
+func (widgets *Widgets) Render(widgetName string, widgetGroupName string) template.HTML {
+	return widgets.NewContext(nil).Render(widgetName, widgetGroupName)
 }
 
-func (widgets *Widgets) settingEditURL(setting *QorWidgetSetting) string {
-	prefix := widgets.WidgetSettingResource.GetAdmin().GetRouter().Prefix
-	return fmt.Sprintf("%v/%v/%v/edit?widget_scope=%v", prefix, widgets.WidgetSettingResource.ToParam(), setting.Name, setting.Scope)
+func (widgets *Widgets) NewContext(context *Context) *Context {
+	if context == nil {
+		context = &Context{}
+	}
+
+	if context.DB == nil {
+		context.DB = widgets.Config.DB
+	}
+
+	if context.Options == nil {
+		context.Options = map[string]interface{}{}
+	}
+
+	context.Widgets = widgets
+	return context
 }
 
 // FuncMap return view functions map
@@ -68,14 +40,14 @@ func (widgets *Widgets) FuncMap(enableInlineEdit bool) template.FuncMap {
 	funcMap := template.FuncMap{}
 
 	funcMap["render_widget"] = func(widgetName, widgetKey string, context *Context) template.HTML {
-		return widgets.Render(widgetName, widgetKey, context, enableInlineEdit)
+		return widgets.Render(widgetName, widgetKey)
 	}
 
 	return funcMap
 }
 
 // Render register widget itself content
-func (w *Widget) Render(context *Context, file, url string) template.HTML {
+func (w *Widget) Render(context *Context, file string) template.HTML {
 	var err error
 	var result = bytes.NewBufferString("")
 	if file == "" {

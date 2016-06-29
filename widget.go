@@ -4,13 +4,10 @@ import (
 	"fmt"
 	"os"
 	"path"
-	"time"
 
 	"github.com/jinzhu/gorm"
 	"github.com/qor/admin"
-	"github.com/qor/qor"
 	"github.com/qor/qor/resource"
-	"github.com/qor/qor/utils"
 	"github.com/qor/roles"
 )
 
@@ -59,114 +56,21 @@ func (widgets *Widgets) RegisterWidgetsGroup(group *WidgetsGroup) {
 }
 
 // ConfigureQorResource a method used to config Widget for qor admin
-func (widgets *Widgets) ConfigureQorResource(res resource.Resourcer) {
+func (widgets *Widgets) ConfigureQorResourceBeforeInitialize(res resource.Resourcer) {
 	if res, ok := res.(*admin.Resource); ok {
 		// register view paths
 		res.GetAdmin().RegisterViewPath("github.com/qor/widget/views")
 
 		// set resources
-		res.Name = "Widget"
 		widgets.Resource = res
+		res.Config.Invisible = true
 
 		// set setting resource
 		if widgets.WidgetSettingResource == nil {
-			widgets.WidgetSettingResource = res.GetAdmin().NewResource(&QorWidgetSetting{}, &admin.Config{Name: res.Name, Permission: roles.Deny(roles.Create, roles.Anyone)})
-
-			widgets.WidgetSettingResource.Meta(&admin.Meta{Name: "Name", Permission: roles.Deny(roles.Update, roles.Anyone)})
-			widgets.WidgetSettingResource.Meta(&admin.Meta{
-				Name: "ActivatedAt",
-				Type: "hidden",
-				Valuer: func(result interface{}, context *qor.Context) interface{} {
-					return time.Now()
-				},
-			})
-			widgets.WidgetSettingResource.Meta(&admin.Meta{
-				Name: "Scope",
-				Type: "hidden",
-				Valuer: func(result interface{}, context *qor.Context) interface{} {
-					if scope := context.Request.URL.Query().Get("widget_scope"); scope != "" {
-						return scope
-					}
-
-					if setting, ok := result.(*QorWidgetSetting); ok {
-						if setting.Scope != "" {
-							return setting.Scope
-						}
-					}
-
-					return "default"
-				},
-			})
-			widgets.WidgetSettingResource.Meta(&admin.Meta{
-				Name: "Widgets",
-				Type: "select_one",
-				Valuer: func(result interface{}, context *qor.Context) interface{} {
-					if typ := context.Request.URL.Query().Get("widget_type"); typ != "" {
-						return typ
-					}
-
-					if setting, ok := result.(*QorWidgetSetting); ok {
-						return GetWidget(setting.GetSerializableArgumentKind()).Name
-					}
-
-					return ""
-				},
-				Collection: func(result interface{}, context *qor.Context) (results [][]string) {
-					if setting, ok := result.(*QorWidgetSetting); ok {
-						for _, group := range registeredWidgetsGroup {
-							if group.Name == setting.GroupName {
-								for _, widget := range group.Widgets {
-									results = append(results, []string{widget, widget})
-								}
-							}
-						}
-
-						if len(results) == 0 {
-							results = append(results, []string{setting.GetSerializableArgumentKind(), setting.GetSerializableArgumentKind()})
-						}
-					}
-					return
-				},
-				Setter: func(result interface{}, metaValue *resource.MetaValue, context *qor.Context) {
-					if setting, ok := result.(*QorWidgetSetting); ok {
-						setting.SetSerializableArgumentKind(utils.ToString(metaValue.Value))
-					}
-				},
-			})
-			widgets.WidgetSettingResource.Meta(&admin.Meta{
-				Name: "Template",
-				Type: "select_one",
-				Valuer: func(result interface{}, context *qor.Context) interface{} {
-					if setting, ok := result.(*QorWidgetSetting); ok {
-						return setting.GetTemplate()
-					}
-					return ""
-				},
-				Collection: func(result interface{}, context *qor.Context) (results [][]string) {
-					if setting, ok := result.(*QorWidgetSetting); ok {
-						if widget := GetWidget(setting.GetSerializableArgumentKind()); widget != nil {
-							for _, value := range widget.Templates {
-								results = append(results, []string{value, value})
-							}
-						}
-					}
-					return
-				},
-			})
-
-			widgets.WidgetSettingResource.IndexAttrs("ID", "Name", "CreatedAt", "UpdatedAt")
-			widgets.WidgetSettingResource.EditAttrs(
-				"ID", "Scope", "ActivatedAt", "Widgets", "Template",
-				&admin.Section{
-					Title: "Settings",
-					Rows:  [][]string{{"Kind"}, {"SerializableMeta"}},
-				},
-			)
+			widgets.WidgetSettingResource = res.GetAdmin().AddResource(&QorWidgetSetting{}, &admin.Config{Name: res.Name, Permission: roles.Deny(roles.Create, roles.Anyone)})
+		} else {
+			widgets.WidgetSettingResource.Permission = roles.Deny(roles.Create, roles.Anyone)
 		}
-
-		// use widget theme
-		res.UseTheme("widget")
-		widgets.WidgetSettingResource.UseTheme("widget")
 
 		for funcName, fc := range funcMap {
 			res.GetAdmin().RegisterFuncMap(funcName, fc)
@@ -175,11 +79,11 @@ func (widgets *Widgets) ConfigureQorResource(res resource.Resourcer) {
 		// configure routes
 		controller := widgetController{Widgets: widgets}
 		router := res.GetAdmin().GetRouter()
-		router.Get(res.ToParam(), controller.Index)
+		router.Get(widgets.WidgetSettingResource.ToParam(), controller.Index)
+		router.Get(fmt.Sprintf("%v/%v", widgets.WidgetSettingResource.ToParam(), widgets.WidgetSettingResource.ParamIDName()), controller.Edit)
+		router.Get(fmt.Sprintf("%v/%v/edit", widgets.WidgetSettingResource.ToParam(), widgets.WidgetSettingResource.ParamIDName()), controller.Edit)
+		router.Put(fmt.Sprintf("%v/%v", widgets.WidgetSettingResource.ToParam(), widgets.WidgetSettingResource.ParamIDName()), controller.Update)
 		router.Get(fmt.Sprintf("%v/inline-edit", res.ToParam()), controller.InlineEdit)
-		router.Get(fmt.Sprintf("%v/%v", res.ToParam(), res.ParamIDName()), controller.Edit)
-		router.Get(fmt.Sprintf("%v/%v/edit", res.ToParam(), res.ParamIDName()), controller.Edit)
-		router.Put(fmt.Sprintf("%v/%v", res.ToParam(), res.ParamIDName()), controller.Update)
 	}
 }
 

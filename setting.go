@@ -3,10 +3,25 @@ package widget
 import (
 	"time"
 
-	"github.com/jinzhu/gorm"
 	"github.com/qor/admin"
+	"github.com/qor/qor"
+	"github.com/qor/qor/resource"
+	"github.com/qor/qor/utils"
+	"github.com/qor/roles"
 	"github.com/qor/serializable_meta"
 )
+
+type QorWidgetSettingInterface interface {
+	GetWidgetName() string
+	SetWidgetName(string)
+	GetGroupName() string
+	SetGroupName(string)
+	GetScope() string
+	SetScope(string)
+	GetTemplate() string
+	SetTemplate(string)
+	serializable_meta.SerializableMetaInterface
+}
 
 // QorWidgetSetting default qor widget setting struct
 type QorWidgetSetting struct {
@@ -19,6 +34,10 @@ type QorWidgetSetting struct {
 	serializable_meta.SerializableMeta
 	CreatedAt time.Time
 	UpdatedAt time.Time
+}
+
+func (widgetSetting *QorWidgetSetting) ResourceName() string {
+	return "Widget Setting"
 }
 
 func (widgetSetting *QorWidgetSetting) BeforeCreate() {
@@ -38,6 +57,36 @@ func (widgetSetting *QorWidgetSetting) SetSerializableArgumentKind(name string) 
 	widgetSetting.Kind = name
 }
 
+// GetWidgetName get widget setting's group name
+func (qorWidgetSetting QorWidgetSetting) GetWidgetName() string {
+	return qorWidgetSetting.Name
+}
+
+// SetWidgetName set widget setting's group name
+func (qorWidgetSetting *QorWidgetSetting) SetWidgetName(name string) {
+	qorWidgetSetting.Name = name
+}
+
+// GetGroupName get widget setting's group name
+func (qorWidgetSetting QorWidgetSetting) GetGroupName() string {
+	return qorWidgetSetting.GroupName
+}
+
+// SetGroupName set widget setting's group name
+func (qorWidgetSetting *QorWidgetSetting) SetGroupName(groupName string) {
+	qorWidgetSetting.GroupName = groupName
+}
+
+// GetScope get widget's scope
+func (qorWidgetSetting QorWidgetSetting) GetScope() string {
+	return qorWidgetSetting.Scope
+}
+
+// SetScope set widget setting's scope
+func (qorWidgetSetting *QorWidgetSetting) SetScope(scope string) {
+	qorWidgetSetting.Scope = scope
+}
+
 // GetTemplate get used widget template
 func (qorWidgetSetting QorWidgetSetting) GetTemplate() string {
 	if widget := GetWidget(qorWidgetSetting.GetSerializableArgumentKind()); widget != nil {
@@ -55,48 +104,126 @@ func (qorWidgetSetting QorWidgetSetting) GetTemplate() string {
 	return ""
 }
 
-func findSettingByName(db *gorm.DB, widgetName string, scopes []string, widgetsGroupNameOrWidgetName string) *QorWidgetSetting {
-	var setting *QorWidgetSetting
-	var settings []QorWidgetSetting
-
-	db.Where("name = ? AND scope IN (?)", widgetName, append(scopes, "default")).Order("activated_at DESC").Find(&settings)
-
-	if len(settings) > 0 {
-	OUTTER:
-		for _, scope := range scopes {
-			for _, s := range settings {
-				if s.Scope == scope {
-					setting = &s
-					break OUTTER
-				}
-			}
-		}
-	}
-
-	// use default setting
-	if setting == nil {
-		for _, s := range settings {
-			if s.Scope == "default" {
-				setting = &s
-				break
-			}
-		}
-	}
-
-	if setting == nil {
-		setting = &QorWidgetSetting{Name: widgetName, Scope: "default"}
-		setting.GroupName = widgetsGroupNameOrWidgetName
-		setting.SetSerializableArgumentKind(widgetsGroupNameOrWidgetName)
-		db.Create(setting)
-	} else if setting.GroupName != widgetsGroupNameOrWidgetName {
-		setting.GroupName = widgetsGroupNameOrWidgetName
-		db.Save(setting)
-	}
-
-	return setting
+// SetTemplate set used widget's template
+func (qorWidgetSetting *QorWidgetSetting) SetTemplate(template string) {
+	qorWidgetSetting.Template = template
 }
 
 // GetSerializableArgumentResource get setting's argument's resource
 func (qorWidgetSetting *QorWidgetSetting) GetSerializableArgumentResource() *admin.Resource {
 	return GetWidget(qorWidgetSetting.GetSerializableArgumentKind()).Setting
+}
+
+// ConfigureQorResource a method used to config Widget for qor admin
+func (qorWidgetSetting *QorWidgetSetting) ConfigureQorResource(res resource.Resourcer) {
+	if res, ok := res.(*admin.Resource); ok {
+		res.Meta(&admin.Meta{Name: "Name", Permission: roles.Deny(roles.Update, roles.Anyone)})
+
+		res.Meta(&admin.Meta{
+			Name: "ActivatedAt",
+			Type: "hidden",
+			Valuer: func(result interface{}, context *qor.Context) interface{} {
+				return time.Now()
+			},
+		})
+
+		res.Meta(&admin.Meta{
+			Name: "Scope",
+			Type: "hidden",
+			Valuer: func(result interface{}, context *qor.Context) interface{} {
+				if scope := context.Request.URL.Query().Get("widget_scope"); scope != "" {
+					return scope
+				}
+
+				if setting, ok := result.(QorWidgetSettingInterface); ok {
+					if scope := setting.GetScope(); scope != "" {
+						return scope
+					}
+				}
+
+				return "default"
+			},
+			Setter: func(result interface{}, metaValue *resource.MetaValue, context *qor.Context) {
+				if setting, ok := result.(QorWidgetSettingInterface); ok {
+					setting.SetScope(utils.ToString(metaValue.Value))
+				}
+			},
+		})
+
+		res.Meta(&admin.Meta{
+			Name: "Widgets",
+			Type: "select_one",
+			Valuer: func(result interface{}, context *qor.Context) interface{} {
+				if typ := context.Request.URL.Query().Get("widget_type"); typ != "" {
+					return typ
+				}
+
+				if setting, ok := result.(QorWidgetSettingInterface); ok {
+					return GetWidget(setting.GetSerializableArgumentKind()).Name
+				}
+
+				return ""
+			},
+			Collection: func(result interface{}, context *qor.Context) (results [][]string) {
+				if setting, ok := result.(QorWidgetSettingInterface); ok {
+					groupName := setting.GetGroupName()
+					for _, group := range registeredWidgetsGroup {
+						if group.Name == groupName {
+							for _, widget := range group.Widgets {
+								results = append(results, []string{widget, widget})
+							}
+						}
+					}
+
+					if len(results) == 0 {
+						results = append(results, []string{setting.GetSerializableArgumentKind(), setting.GetSerializableArgumentKind()})
+					}
+				}
+				return
+			},
+			Setter: func(result interface{}, metaValue *resource.MetaValue, context *qor.Context) {
+				if setting, ok := result.(QorWidgetSettingInterface); ok {
+					setting.SetSerializableArgumentKind(utils.ToString(metaValue.Value))
+				}
+			},
+		})
+
+		res.Meta(&admin.Meta{
+			Name: "Template",
+			Type: "select_one",
+			Valuer: func(result interface{}, context *qor.Context) interface{} {
+				if setting, ok := result.(QorWidgetSettingInterface); ok {
+					return setting.GetTemplate()
+				}
+				return ""
+			},
+			Collection: func(result interface{}, context *qor.Context) (results [][]string) {
+				if setting, ok := result.(QorWidgetSettingInterface); ok {
+					if widget := GetWidget(setting.GetSerializableArgumentKind()); widget != nil {
+						for _, value := range widget.Templates {
+							results = append(results, []string{value, value})
+						}
+					}
+				}
+				return
+			},
+			Setter: func(result interface{}, metaValue *resource.MetaValue, context *qor.Context) {
+				if setting, ok := result.(QorWidgetSettingInterface); ok {
+					setting.SetTemplate(utils.ToString(metaValue.Value))
+				}
+			},
+		})
+
+		res.UseTheme("widget")
+
+		res.IndexAttrs("Name", "CreatedAt", "UpdatedAt")
+		res.ShowAttrs("Name", "Scope", "WidgetType", "Template", "Value", "CreatedAt", "UpdatedAt")
+		res.EditAttrs(
+			"Scope", "ActivatedAt", "Widgets", "Template",
+			&admin.Section{
+				Title: "Settings",
+				Rows:  [][]string{{"Kind"}, {"SerializableMeta"}},
+			},
+		)
+	}
 }
