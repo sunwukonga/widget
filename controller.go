@@ -59,8 +59,13 @@ func (wc widgetController) InlineEdit(context *admin.Context) {
 
 func (wc widgetController) getWidget(context *admin.Context) (interface{}, []string, error) {
 	if context.ResourceID == "" {
+		scope := context.Request.URL.Query().Get("widget_scope")
+		if scope == "" {
+			scope = "default"
+		}
+
 		// index page
-		context.SetDB(context.GetDB().Where("scope = ?", "default").Order("activated_at DESC").Group("name"))
+		context.SetDB(context.GetDB().Where("scope = ?", scope).Order("activated_at DESC").Group("name"))
 		results, err := context.FindMany()
 		return results, []string{}, err
 	}
