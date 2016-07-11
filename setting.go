@@ -1,8 +1,10 @@
 package widget
 
 import (
+	"reflect"
 	"time"
 
+	"github.com/jinzhu/gorm"
 	"github.com/qor/admin"
 	"github.com/qor/qor"
 	"github.com/qor/qor/resource"
@@ -43,6 +45,11 @@ func (widgetSetting *QorWidgetSetting) ResourceName() string {
 func (widgetSetting *QorWidgetSetting) BeforeCreate() {
 	now := time.Now()
 	widgetSetting.ActivatedAt = &now
+}
+
+func (widgetSetting *QorWidgetSetting) BeforeUpdate(scope *gorm.Scope) error {
+	value := reflect.New(scope.GetModelStruct().ModelType).Interface()
+	return scope.NewDB().Model(value).Where("name = ? AND scope = ?", widgetSetting.Name, widgetSetting.Scope).UpdateColumn("activated_at", gorm.Expr("NULL")).Error
 }
 
 func (widgetSetting *QorWidgetSetting) GetSerializableArgumentKind() string {
@@ -111,7 +118,11 @@ func (qorWidgetSetting *QorWidgetSetting) SetTemplate(template string) {
 
 // GetSerializableArgumentResource get setting's argument's resource
 func (qorWidgetSetting *QorWidgetSetting) GetSerializableArgumentResource() *admin.Resource {
-	return GetWidget(qorWidgetSetting.GetSerializableArgumentKind()).Setting
+	widget := GetWidget(qorWidgetSetting.GetSerializableArgumentKind())
+	if widget != nil {
+		return widget.Setting
+	}
+	return nil
 }
 
 // ConfigureQorResource a method used to config Widget for qor admin
