@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"reflect"
 
+	"github.com/jinzhu/gorm"
 	"github.com/qor/admin"
 	"github.com/qor/responder"
 	"github.com/qor/serializable_meta"
@@ -92,16 +93,14 @@ func (wc widgetController) getWidget(context *admin.Context) (interface{}, []str
 		scope = "default"
 	}
 
-	context.GetDB().Model(result).Where("name = ?", context.ResourceID).Order("activated_at IS NOT NULL").Find(widgetSettings)
+	context.GetDB().Model(result).Where("name = ?", context.ResourceID).Order(gorm.Expr("scope = ?, activated_at IS NULL", "default")).Find(widgetSettings)
 
 	widgetSettingsValues := reflect.Indirect(reflect.ValueOf(widgetSettings))
 	for i := 0; i < widgetSettingsValues.Len(); i++ {
 		setting := widgetSettingsValues.Index(i).Interface().(QorWidgetSettingInterface)
-		if setting.GetScope() == scope {
-			selectedSetting = &QorWidgetSetting{Name: context.ResourceID, Scope: scope}
-
-			if setting.GetSerializableArgumentKind() == widgetType {
-				selectedSetting = &QorWidgetSetting{Name: context.ResourceID, Scope: scope, WidgetType: widgetType}
+		if setting.GetSerializableArgumentKind() == widgetType {
+			selectedSetting = &QorWidgetSetting{Name: context.ResourceID, Scope: scope, WidgetType: widgetType}
+			if setting.GetScope() == scope {
 				break
 			}
 		}
@@ -111,7 +110,7 @@ func (wc widgetController) getWidget(context *admin.Context) (interface{}, []str
 		selectedSetting = &QorWidgetSetting{Name: context.ResourceID, Scope: "default"}
 	}
 
-	err := context.GetDB().Order("activated_at IS NOT NULL").First(result, selectedSetting).Error
+	err := context.GetDB().Order("activated_at IS NULL").First(result, selectedSetting).Error
 
 	if widgetType != "" {
 		if serializableMeta, ok := result.(serializable_meta.SerializableMetaInterface); ok && serializableMeta.GetSerializableArgumentKind() != widgetType {
