@@ -16,29 +16,25 @@ import (
 )
 
 var db *gorm.DB
+var Widgets *widget.Widgets
+var Admin *admin.Admin
+
+type bannerArgument struct {
+	Title    string
+	SubTitle string
+}
 
 func init() {
 	db = utils.TestDB()
-}
 
-// Runner
-func TestRender(t *testing.T) {
-	db.DropTable(&widget.QorWidgetSetting{})
-	db.AutoMigrate(&widget.QorWidgetSetting{})
-
-	Widgets := widget.New(&widget.Config{
+	Widgets = widget.New(&widget.Config{
 		DB: db,
 	})
 	Widgets.RegisterViewPath("github.com/qor/widget/test")
 
-	Admin := admin.New(&qor.Config{DB: db})
+	Admin = admin.New(&qor.Config{DB: db})
 	Admin.AddResource(Widgets)
 	Admin.MountTo("/admin", http.NewServeMux())
-
-	type bannerArgument struct {
-		Title    string
-		SubTitle string
-	}
 
 	Widgets.RegisterWidget(&widget.Widget{
 		Name:      "Banner",
@@ -53,7 +49,33 @@ func TestRender(t *testing.T) {
 			return context
 		},
 	})
+}
 
+func reset() {
+	db.DropTable(&widget.QorWidgetSetting{})
+	db.AutoMigrate(&widget.QorWidgetSetting{})
+}
+
+// Test DB's record after call Render
+func TestRenderRecord(t *testing.T) {
+	reset()
+	var count int
+	db.Model(&widget.QorWidgetSetting{}).Where(widget.QorWidgetSetting{Name: "HomeBanner", WidgetType: "Banner", Scope: "default", GroupName: "Banner"}).Count(&count)
+	if count != 0 {
+		t.Errorf(color.RedString(fmt.Sprintf("\nWidget Render Record TestCase: should don't exist widget setting")))
+	}
+
+	widgetContext := Widgets.NewContext(&widget.Context{})
+	widgetContext.Render("HomeBanner", "Banner")
+	db.Model(&widget.QorWidgetSetting{}).Where(widget.QorWidgetSetting{Name: "HomeBanner", WidgetType: "Banner", Scope: "default", GroupName: "Banner"}).Count(&count)
+	if count == 0 {
+		t.Errorf(color.RedString(fmt.Sprintf("\nWidget Render Record TestCase: should have default widget setting")))
+	}
+}
+
+// Runner
+func TestRenderContext(t *testing.T) {
+	reset()
 	setting := &widget.QorWidgetSetting{}
 	db.Where(widget.QorWidgetSetting{Name: "HomeBanner", WidgetType: "Banner"}).FirstOrInit(setting)
 	db.Create(setting)

@@ -118,6 +118,7 @@ func (context *Context) findWidgetSetting(widgetName string, scopes []string, wi
 
 	if setting == nil {
 		setting = widgetSettingResource.NewStruct().(QorWidgetSettingInterface)
+		setting.SetWidgetName(widgetName)
 		setting.SetGroupName(widgetGroupName)
 		setting.SetSerializableArgumentKind(widgetGroupName)
 		db.Create(setting)
