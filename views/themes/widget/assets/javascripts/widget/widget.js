@@ -47,7 +47,7 @@
       $('select').closest('.qor-form-section').hide();
       $('select').each(function () {
         // TODO:
-        if ($(this).find('option').size() > 2) {
+        if ($(this).find('option').filter('[value!=""]').size() >= 2) {
           $(this).closest('.qor-form-section').show();
         }
       });
