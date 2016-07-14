@@ -2,10 +2,11 @@ package widget_test
 
 import (
 	"fmt"
-	"testing"
-
 	"net/http"
+	"net/http/httptest"
+	"net/url"
 	"strings"
+	"testing"
 
 	"github.com/fatih/color"
 	"github.com/jinzhu/gorm"
@@ -18,6 +19,7 @@ import (
 var db *gorm.DB
 var Widgets *widget.Widgets
 var Admin *admin.Admin
+var Server *httptest.Server
 
 type bannerArgument struct {
 	Title    string
@@ -26,6 +28,8 @@ type bannerArgument struct {
 
 func init() {
 	db = utils.TestDB()
+	mux := http.NewServeMux()
+	Server = httptest.NewServer(mux)
 
 	Widgets = widget.New(&widget.Config{
 		DB: db,
@@ -34,7 +38,7 @@ func init() {
 
 	Admin = admin.New(&qor.Config{DB: db})
 	Admin.AddResource(Widgets)
-	Admin.MountTo("/admin", http.NewServeMux())
+	Admin.MountTo("/admin", mux)
 
 	Widgets.RegisterWidget(&widget.Widget{
 		Name:      "Banner",
@@ -47,6 +51,17 @@ func init() {
 				context.Options["SubTitle"] = argument.SubTitle
 			}
 			return context
+		},
+	})
+
+	Widgets.RegisterScope(&widget.Scope{
+		Name: "From Google",
+		Visible: func(context *widget.Context) bool {
+			if request, ok := context.Get("Request"); ok {
+				_, ok := request.(*http.Request).URL.Query()["from_google"]
+				return ok
+			}
+			return false
 		},
 	})
 }
@@ -70,6 +85,19 @@ func TestRenderRecord(t *testing.T) {
 	db.Model(&widget.QorWidgetSetting{}).Where(widget.QorWidgetSetting{Name: "HomeBanner", WidgetType: "Banner", Scope: "default", GroupName: "Banner"}).Count(&count)
 	if count == 0 {
 		t.Errorf(color.RedString(fmt.Sprintf("\nWidget Render Record TestCase: should have default widget setting")))
+	}
+
+	http.PostForm(Server.URL+"/admin/widgets/HomeBanner",
+		url.Values{"_method": {"PUT"},
+			"QorResource.Scope":       {"from_google"},
+			"QorResource.ActivatedAt": {"2016-07-14 10:10:42.433372925 +0800 CST"},
+			"QorResource.Widgets":     {"Banner"},
+			"QorResource.Template":    {"banner"},
+			"QorResource.Kind":        {"Banner"},
+		})
+	db.Model(&widget.QorWidgetSetting{}).Where(widget.QorWidgetSetting{Name: "HomeBanner", WidgetType: "Banner", Scope: "from_google"}).Count(&count)
+	if count == 0 {
+		t.Errorf(color.RedString(fmt.Sprintf("\nWidget Render Record TestCase: should have from_google widget setting")))
 	}
 }
 
