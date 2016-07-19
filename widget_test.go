@@ -23,7 +23,9 @@ func init() {
 
 // Runner
 func TestRender(t *testing.T) {
-	db.DropTable(&widget.QorWidgetSetting{})
+	if err := db.DropTableIfExists(&widget.QorWidgetSetting{}).Error; err != nil {
+		panic(err)
+	}
 	db.AutoMigrate(&widget.QorWidgetSetting{})
 
 	Widgets := widget.New(&widget.Config{
