@@ -39,7 +39,7 @@ type QorWidgetSetting struct {
 }
 
 func (widgetSetting *QorWidgetSetting) ResourceName() string {
-	return "Widget Setting"
+	return "Widget Content"
 }
 
 func (widgetSetting *QorWidgetSetting) BeforeCreate() {
