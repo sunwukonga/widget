@@ -73,7 +73,7 @@
           }
 
           if (isInSlideout) {
-            clickTmpl = '<a href=' + url + ' style="display: none;" class="qor-widget-' + val + '" data-url="' + url + '">' + val + '</a>';
+            clickTmpl = '<a href=' + url + ' style="display: none;" class="qor-widget-' + val + '" data-open-type="slideout" data-url="' + url + '">' + val + '</a>';
           } else {
             clickTmpl = '<a href=' + url + ' style="display: none;" class="qor-widget-' + val + '">' + val + '</a>';
           }
