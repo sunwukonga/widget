@@ -36,11 +36,17 @@ func (widgets *Widgets) NewContext(context *Context) *Context {
 }
 
 // FuncMap return view functions map
-func (widgets *Widgets) FuncMap(enableInlineEdit bool) template.FuncMap {
+func (widgets *Widgets) FuncMap() template.FuncMap {
 	funcMap := template.FuncMap{}
 
-	funcMap["render_widget"] = func(widgetName, widgetKey string, context *Context) template.HTML {
-		return widgets.Render(widgetName, widgetKey)
+	funcMap["render_widget"] = func(widgetName string, widgetGroupName ...string) template.HTML {
+		var groupName string
+		if len(widgetGroupName) == 0 {
+			groupName = ""
+		} else {
+			groupName = widgetGroupName[0]
+		}
+		return widgets.Render(widgetName, groupName)
 	}
 
 	return funcMap
