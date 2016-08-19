@@ -31,6 +31,44 @@ Widgets.RegisterWidget(&widget.Widget{
   },
 })
 
+
+type slideImage struct {
+	Title string
+	Image media_library.FileSystem
+}
+
+type slideShowArgument struct {
+	SlideImages []slideImage
+}
+
+slideShowResource := Admin.NewResource(&slideShowArgument{})
+slideShowResource.AddProcessor(func(value interface{}, metaValues *resource.MetaValues, context *qor.Context) error {
+	if slides, ok := value.(*slideShowArgument); ok {
+		for _, slide := range slides.SlideImages {
+			if slide.Title == "" {
+				return errors.New("slide title is blank")
+			}
+		}
+	}
+	return nil
+})
+
+Widgets.RegisterWidget(&widget.Widget{
+	Name:      "SlideShow",
+	Templates: []string{"slideshow"},
+	Setting:   slideShowResource,
+	Context: func(context *widget.Context, setting interface{}) *widget.Context {
+		context.Options["Setting"] = setting
+		return context
+	},
+})
+
+// Define Widget Group
+Widgets.RegisterWidgetGroup(&widget.WidgetGroup{
+  Name: "HomeBanners",
+  Widgets: []string{"Banner", "SlideShow"},
+})
+
 // Manage widgets from QOR Admin interface
 Admin.AddResource(Widgets)
 ```
@@ -39,14 +77,18 @@ Admin.AddResource(Widgets)
 
 ```go
 func Index(request *http.Request, writer http.ResponseWriter) {
-  // Generate widget context, widget will generate a new context based on it, and use the generated one to render template
-  widgetContext := widget.NewContext(map[string]interface{}{"Request": request, "CurrentUser": currentUser})
+  // Generate widget context
+	widgetContext := admin.Widgets.NewContext(&widget.Context{
+		DB:         DB(request),
+		Options:    map[string]interface{}{"Request": request, "CurrentUser": currentUser}, // those options are accessible from widget views
+    InlineEdit: true, // enable inline edit mode for widget
+	})
 
   // Render Widget `HomeBanner` based on widget `Banner`'s definition to HTML template
-  bannerContent := Widgets.Render("Banner", "HomeBanner", widgetContext)
+  homeBannerContent := widgetContext.Render("HomeBanner", "Banner")
 
-  // Render Widget `CampaignBanner` based on widget `Banner`'s definition with inline edit enabled to HTML template
-  bannerContent := Widgets.Render("Banner", "CampaignBanner", widgetContext, true)
+  // Render Widget `CampaignBanner` based on widget `Banner`'s definition to HTML template
+  campaignBannerContent := widgetContext.Render("CampaignBanner", "Banner")
 
   // Then you could use the banner's HTML content in your templates
 }
@@ -124,27 +166,3 @@ Widgets.RegisterScope(&widget.Scope{
 ## License
 
 Released under the [MIT License](http://opensource.org/licenses/MIT).
-
-```go
-Widgets.RegisterWidget(&widget.Widget{
-  // Widget's Name
-  Name:     "Banner",
-  // Widget's available templates
-  Templates: []string{"banner1", "banner2"},
-  // Widget's setting, which is configurable from the place using the widget with inline edit
-  Setting:  Admin.NewResource(&bannerArgument{}),
-  // Generate a context to render the widget based on the widget's configurations
-  Context: func(context *widget.Context, setting interface{}) *widget.Context {
-    context.Options["Setting"] = setting
-    context.Options["CurrentTime"] = time.Now()
-    return context
-  },
-})
-
-Widgets.RegisterWidgetGroup(&widget.WidgetGroup{
-  Name: "Banner",
-  Widgets: []*widget.Widget{widget1, widget2},
-})
-
-render_widget "home_banner", "Banner"
-```

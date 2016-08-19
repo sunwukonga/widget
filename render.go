@@ -36,7 +36,7 @@ func (widgets *Widgets) NewContext(context *Context) *Context {
 }
 
 // FuncMap return view functions map
-func (widgets *Widgets) FuncMap() template.FuncMap {
+func (context *Context) FuncMap() template.FuncMap {
 	funcMap := template.FuncMap{}
 
 	funcMap["render_widget"] = func(widgetName string, widgetGroupName ...string) template.HTML {
@@ -46,7 +46,7 @@ func (widgets *Widgets) FuncMap() template.FuncMap {
 		} else {
 			groupName = widgetGroupName[0]
 		}
-		return widgets.Render(widgetName, groupName)
+		return context.Render(widgetName, groupName)
 	}
 
 	return funcMap
