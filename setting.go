@@ -128,7 +128,9 @@ func (qorWidgetSetting *QorWidgetSetting) GetSerializableArgumentResource() *adm
 // ConfigureQorResource a method used to config Widget for qor admin
 func (qorWidgetSetting *QorWidgetSetting) ConfigureQorResource(res resource.Resourcer) {
 	if res, ok := res.(*admin.Resource); ok {
-		res.Meta(&admin.Meta{Name: "Name", Permission: roles.Deny(roles.Update, roles.Anyone)})
+		if res.GetMeta("Name") == nil {
+			res.Meta(&admin.Meta{Name: "Name", Permission: roles.Deny(roles.Update, roles.Anyone)})
+		}
 
 		res.Meta(&admin.Meta{
 			Name: "ActivatedAt",
