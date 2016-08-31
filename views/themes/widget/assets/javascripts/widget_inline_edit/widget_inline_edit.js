@@ -48,7 +48,7 @@
       var $this = $(this);
 
       $(ID_WIDGET).addClass("show").focus();
-      $(ID_WIDGET).contents().find(".js-widget-edit-link").attr("data-url", $this.data("url"));
+      document.getElementById('qor-widget-iframe').contentWindow.$(".js-widget-edit-link").attr("data-url", $this.data("url")).click();
       $body.addClass("open-widget-editor");
 
       return false;
