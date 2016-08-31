@@ -17,7 +17,11 @@ if(!window.loadedWidgetAsset) {
 
   window.loadedWidgetAsset = true;
   var prefix = document.currentScript.getAttribute("data-prefix");
-  window.jQuery || loadjscssfile(prefix + "/assets/javascripts/vendors/jquery.min.js", "js");
+
+  if (!window.jQuery) {
+    loadjscssfile(prefix + "/assets/javascripts/vendors/jquery.min.js", "js");
+  }
+
   loadjscssfile(prefix + "/assets/javascripts/widget_inline_edit.js?theme=widget", "js");
   loadjscssfile(prefix + "/assets/stylesheets/widget_inline_edit.css?theme=widget", "css");
 }
