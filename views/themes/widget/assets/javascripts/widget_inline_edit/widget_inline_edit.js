@@ -19,7 +19,7 @@
   var EVENT_DISABLE = 'disable.' + NAMESPACE;
   var EVENT_CLICK = 'click.' + NAMESPACE;
   var EDIT_WIDGET_BUTTON = '.qor-widget-button';
-  var ID_WIDGET = '#qor-widget-iframe';
+  var ID_WIDGET = 'qor-widget-iframe';
   var INLINE_EDIT_URL;
 
   function QorWidgetInlineEdit(element, options) {
@@ -38,17 +38,55 @@
 
     bind: function () {
       this.$element.on(EVENT_CLICK, EDIT_WIDGET_BUTTON, this.click);
+      $(document).on('keyup', this.keyup);
     },
 
     initStatus : function () {
-      $body.append('<iframe id="qor-widget-iframe" src="' + INLINE_EDIT_URL + '"></iframe>');
+      var iframe = document.createElement("iframe");
+      
+      iframe.src = INLINE_EDIT_URL;
+      iframe.id = ID_WIDGET;
+
+      // show edit button after iframe totally loaded.
+      if (iframe.attachEvent){
+        iframe.attachEvent("onload", function(){
+          $('.qor-widget-button').show();
+        });
+      } else {
+        iframe.onload = function(){
+          $('.qor-widget-button').show();
+        };
+      }
+
+      document.body.appendChild(iframe);
+    },
+
+    keyup: function (e) {
+      var iframe = document.getElementById('qor-widget-iframe');
+      if (e.keyCode === 27) {
+        iframe && iframe.contentDocument.querySelector('.qor-slideout__close').click();
+      }
     },
 
     click: function () {
       var $this = $(this);
+      var iframe = document.getElementById('qor-widget-iframe');
+      var $iframe = iframe.contentWindow.$;
+      var editLink = iframe.contentDocument.querySelector('.js-widget-edit-link');
 
-      $(ID_WIDGET).addClass("show").focus();
-      document.getElementById('qor-widget-iframe').contentWindow.$(".js-widget-edit-link").attr("data-url", $this.data("url")).click();
+      if (!editLink) {
+        return;
+      }
+
+      iframe.classList.add('show');
+      
+      if ($iframe) {
+        $iframe(".js-widget-edit-link").attr("data-url", $this.data("url")).click();
+      } else {
+        editLink.setAttribute("data-url", $this.data("url"));
+        editLink.click();
+      }
+      
       $body.addClass("open-widget-editor");
 
       return false;
@@ -62,11 +100,9 @@
       var fn;
 
       if (!data) {
-
         if (/destroy/.test(options)) {
           return;
         }
-
         $this.data(NAMESPACE, (data = new QorWidgetInlineEdit(this, options)));
       }
 
@@ -79,21 +115,19 @@
 
   $(function () {
     $body.attr("data-toggle", "qor.widgets");
+    
     $(".qor-widget").each(function () {
       var $this = $(this);
       var $wrap = $this.children().eq(0);
+      
       INLINE_EDIT_URL = $this.data("widget-inline-edit-url");
+
       $wrap.css("position", "relative").addClass("qor-widget").unwrap();
-      $wrap.append('<div class="qor-widget-embed-wrapper"><button data-url=\"' + $this.data("url") + '\" class="qor-widget-button">Edit</button></div>');
+      $wrap.append('<div class="qor-widget-embed-wrapper"><button style="display: none;" data-url=\"' + $this.data("url") + '\" class="qor-widget-button">Edit</button></div>');
     });
-    
-    window.closeWidgetEditBox = function () {
-      $(ID_WIDGET).removeClass("show");
-      $body.removeClass("open-widget-editor");
-      $(ID_WIDGET)[0].contentWindow.location.reload();
-    };
 
     var selector = '[data-toggle="qor.widgets"]';
+
     $(document).
       on(EVENT_DISABLE, function (e) {
         QorWidgetInlineEdit.plugin.call($(selector, e.target), 'destroy');
