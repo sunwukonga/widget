@@ -145,6 +145,10 @@
         QorWidget.plugin.call($(selector, e.target));
       })
       .triggerHandler(EVENT_ENABLE);
+
+      if ($('.qor-page__header .qor-page-subnav__header').length) {
+        $('.mdl-layout__content').addClass('has-subnav');
+      }
   });
 
   return QorWidget;
