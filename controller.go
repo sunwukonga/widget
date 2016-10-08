@@ -55,7 +55,7 @@ func (wc widgetController) Update(context *admin.Context) {
 }
 
 func (wc widgetController) InlineEdit(context *admin.Context) {
-	context.Writer.Write([]byte(context.Render("inline_edit")))
+	context.Writer.Write([]byte(context.Render("widget/inline_edit")))
 }
 
 func (wc widgetController) getWidget(context *admin.Context) (interface{}, []string, error) {
