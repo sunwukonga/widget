@@ -2,6 +2,7 @@ package widget
 
 import (
 	"fmt"
+	"html/template"
 	"os"
 	"path"
 
@@ -33,13 +34,14 @@ func init() {
 
 // New new widgets container
 func New(config *Config) *Widgets {
-	widgets := &Widgets{Config: config}
+	widgets := &Widgets{Config: config, funcMaps: template.FuncMap{}}
 	widgets.RegisterViewPath("app/views/widgets")
 	return widgets
 }
 
 // Widgets widgets container
 type Widgets struct {
+	funcMaps              template.FuncMap
 	Config                *Config
 	Resource              *admin.Resource
 	WidgetSettingResource *admin.Resource
@@ -53,6 +55,11 @@ func (widgets *Widgets) RegisterWidget(w *Widget) {
 // RegisterWidgetGroup register widgets group
 func (widgets *Widgets) RegisterWidgetsGroup(group *WidgetsGroup) {
 	registeredWidgetsGroup = append(registeredWidgetsGroup, group)
+}
+
+// // RegisterFuncMap register view funcs, it could be used when render templates
+func (widgets *Widgets) RegisterFuncMap(name string, fc interface{}) {
+	widgets.funcMaps[name] = fc
 }
 
 // ConfigureQorResource a method used to config Widget for qor admin

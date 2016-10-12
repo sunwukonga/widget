@@ -9,20 +9,14 @@ import (
 	"github.com/qor/qor/utils"
 )
 
-// NewContext new widget context
-func NewContext(options map[string]interface{}) *Context {
-	return &Context{
-		Options: options,
-	}
-}
-
 // Context widget context
 type Context struct {
 	Widgets          *Widgets
 	DB               *gorm.DB
-	InlineEdit       bool
 	AvailableWidgets []string
 	Options          map[string]interface{}
+	InlineEdit       bool
+	FuncMaps         template.FuncMap
 }
 
 // Get get option with name

@@ -13,6 +13,7 @@ import (
 	"github.com/qor/serializable_meta"
 )
 
+// QorWidgetSettingInterface qor widget setting interface
 type QorWidgetSettingInterface interface {
 	GetWidgetName() string
 	SetWidgetName(string)

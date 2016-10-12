@@ -2,6 +2,7 @@ package widget_test
 
 import (
 	"fmt"
+	"html/template"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -136,5 +137,27 @@ func TestRenderContext(t *testing.T) {
 	html = widgetContext.Render("HomeBanner", "Banner")
 	if !strings.Contains(string(html), "Hello, Qortex\n<h1>Title</h1>\n<h2>SubTitle</h2>\n") {
 		t.Errorf(color.RedString(fmt.Sprintf("\nWidget Render TestCase #%d: Failure Result:\n %s\n", 3, html)))
+	}
+}
+
+func TestRegisterFuncMap(t *testing.T) {
+	func1 := func() {}
+	Widgets.RegisterFuncMap("func1", func1)
+	context := Widgets.NewContext(nil)
+	if _, ok := context.FuncMaps["func1"]; !ok {
+		t.Errorf("func1 should be assigned to context")
+	}
+
+	context2 := context.Funcs(template.FuncMap{"func2": func() {}})
+	if _, ok := context.FuncMaps["func2"]; !ok {
+		t.Errorf("func2 should be assigned to context")
+	}
+	if _, ok := context2.FuncMaps["func2"]; !ok {
+		t.Errorf("func2 should be assigned to context")
+	}
+
+	context3 := Widgets.NewContext(nil)
+	if _, ok := context3.FuncMaps["func3"]; ok {
+		t.Errorf("func3 should not be assigned to other contexts")
 	}
 }

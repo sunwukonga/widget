@@ -18,6 +18,7 @@ func (widgets *Widgets) Render(widgetName string, widgetGroupName string) templa
 	return widgets.NewContext(nil).Render(widgetName, widgetGroupName)
 }
 
+// NewContext create new context for widgets
 func (widgets *Widgets) NewContext(context *Context) *Context {
 	if context == nil {
 		context = &Context{}
@@ -31,11 +32,33 @@ func (widgets *Widgets) NewContext(context *Context) *Context {
 		context.Options = map[string]interface{}{}
 	}
 
+	if context.FuncMaps == nil {
+		context.FuncMaps = template.FuncMap{}
+	}
+
+	for key, fc := range widgets.funcMaps {
+		if _, ok := context.FuncMaps[key]; !ok {
+			context.FuncMaps[key] = fc
+		}
+	}
+
 	context.Widgets = widgets
 	return context
 }
 
-// FuncMap return view functions map
+// Funcs return view functions map
+func (context *Context) Funcs(funcMaps template.FuncMap) *Context {
+	if context.FuncMaps == nil {
+		context.FuncMaps = template.FuncMap{}
+	}
+
+	for key, fc := range funcMaps {
+		context.FuncMaps[key] = fc
+	}
+
+	return context
+}
+
 func (context *Context) FuncMap() template.FuncMap {
 	funcMap := template.FuncMap{}
 
@@ -68,7 +91,7 @@ func (w *Widget) Render(context *Context, file string) template.HTML {
 	}()
 
 	if file, err = w.findTemplate(file + ".tmpl"); err == nil {
-		if tmpl, err := template.New(filepath.Base(file)).ParseFiles(file); err == nil {
+		if tmpl, err := template.New(filepath.Base(file)).Funcs(context.FuncMaps).ParseFiles(file); err == nil {
 			if err = tmpl.Execute(result, context.Options); err == nil {
 				return template.HTML(result.String())
 			}
