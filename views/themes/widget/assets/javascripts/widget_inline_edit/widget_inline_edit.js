@@ -43,7 +43,7 @@
 
     initStatus : function () {
       var iframe = document.createElement("iframe");
-      
+
       iframe.src = INLINE_EDIT_URL;
       iframe.id = ID_WIDGET;
 
@@ -79,14 +79,14 @@
       }
 
       iframe.classList.add('show');
-      
+
       if ($iframe) {
-        $iframe(".js-widget-edit-link").attr("data-url", $this.data("url")).click();
+        $iframe(".js-widget-edit-link").data("url", $this.data("url")).click();
       } else {
         editLink.setAttribute("data-url", $this.data("url"));
         editLink.click();
       }
-      
+
       $body.addClass("open-widget-editor");
 
       return false;
@@ -115,11 +115,11 @@
 
   $(function () {
     $body.attr("data-toggle", "qor.widgets");
-    
+
     $(".qor-widget").each(function () {
       var $this = $(this);
       var $wrap = $this.children().eq(0);
-      
+
       INLINE_EDIT_URL = $this.data("widget-inline-edit-url");
 
       $wrap.css("position", "relative").addClass("qor-widget").unwrap();
