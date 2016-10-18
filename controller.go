@@ -1,6 +1,7 @@
 package widget
 
 import (
+	"html/template"
 	"net/http"
 	"reflect"
 
@@ -31,14 +32,17 @@ func (wc widgetController) Index(context *admin.Context) {
 }
 
 func (wc widgetController) Edit(context *admin.Context) {
-	context.Resource = wc.Widgets.WidgetSettingResource
+	context = context.NewResourceContext(wc.Widgets.WidgetSettingResource)
 	widgetSetting, scopes, err := wc.getWidget(context)
 	context.AddError(err)
-	context.Execute("edit", map[string]interface{}{"Scopes": scopes, "Widget": widgetSetting})
+
+	context.Funcs(template.FuncMap{
+		"get_widget_scopes": func() []string { return scopes },
+	}).Execute("edit", widgetSetting)
 }
 
 func (wc widgetController) Update(context *admin.Context) {
-	context.Resource = wc.Widgets.WidgetSettingResource
+	context = context.NewResourceContext(wc.Widgets.WidgetSettingResource)
 	widgetSetting, scopes, err := wc.getWidget(context)
 	context.AddError(err)
 
@@ -48,7 +52,9 @@ func (wc widgetController) Update(context *admin.Context) {
 
 	if context.HasError() {
 		context.Writer.WriteHeader(admin.HTTPUnprocessableEntity)
-		context.Execute("edit", map[string]interface{}{"Scopes": scopes, "Widget": widgetSetting})
+		context.Funcs(template.FuncMap{
+			"get_widget_scopes": func() []string { return scopes },
+		}).Execute("edit", widgetSetting)
 	} else {
 		http.Redirect(context.Writer, context.Request, context.Request.URL.Path, http.StatusFound)
 	}
