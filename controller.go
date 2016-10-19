@@ -104,7 +104,7 @@ func (wc widgetController) getWidget(context *admin.Context) (interface{}, []str
 	widgetSettingsValues := reflect.Indirect(reflect.ValueOf(widgetSettings))
 	for i := 0; i < widgetSettingsValues.Len(); i++ {
 		setting := widgetSettingsValues.Index(i).Interface().(QorWidgetSettingInterface)
-		if setting.GetSerializableArgumentKind() == widgetType {
+		if widgetType == "" || setting.GetSerializableArgumentKind() == widgetType {
 			selectedSetting = &QorWidgetSetting{Name: context.ResourceID, Scope: setting.GetScope(), WidgetType: widgetType}
 			if setting.GetScope() == scope {
 				break
