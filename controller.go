@@ -31,6 +31,11 @@ func (wc widgetController) Index(context *admin.Context) {
 	}
 }
 
+func (wc widgetController) New(context *admin.Context) {
+	widgetInter := wc.Widgets.WidgetSettingResource.NewStruct().(QorWidgetSettingInterface)
+	context.Execute("new", widgetInter)
+}
+
 func (wc widgetController) Edit(context *admin.Context) {
 	context = context.NewResourceContext(wc.Widgets.WidgetSettingResource)
 	widgetSetting, scopes, err := wc.getWidget(context)

@@ -9,7 +9,6 @@ import (
 	"github.com/jinzhu/gorm"
 	"github.com/qor/admin"
 	"github.com/qor/qor/resource"
-	"github.com/qor/roles"
 )
 
 var (
@@ -74,9 +73,7 @@ func (widgets *Widgets) ConfigureQorResourceBeforeInitialize(res resource.Resour
 
 		// set setting resource
 		if widgets.WidgetSettingResource == nil {
-			widgets.WidgetSettingResource = res.GetAdmin().AddResource(&QorWidgetSetting{}, &admin.Config{Name: res.Name, Permission: roles.Deny(roles.Create, roles.Anyone)})
-		} else {
-			widgets.WidgetSettingResource.Permission = roles.Deny(roles.Create, roles.Anyone)
+			widgets.WidgetSettingResource = res.GetAdmin().AddResource(&QorWidgetSetting{}, &admin.Config{Name: res.Name})
 		}
 
 		for funcName, fc := range funcMap {
@@ -87,6 +84,7 @@ func (widgets *Widgets) ConfigureQorResourceBeforeInitialize(res resource.Resour
 		controller := widgetController{Widgets: widgets}
 		router := res.GetAdmin().GetRouter()
 		router.Get(widgets.WidgetSettingResource.ToParam(), controller.Index)
+		router.Get(fmt.Sprintf("%v/new", widgets.WidgetSettingResource.ToParam()), controller.New)
 		router.Get(fmt.Sprintf("%v/%v", widgets.WidgetSettingResource.ToParam(), widgets.WidgetSettingResource.ParamIDName()), controller.Edit)
 		router.Get(fmt.Sprintf("%v/%v/edit", widgets.WidgetSettingResource.ToParam(), widgets.WidgetSettingResource.ParamIDName()), controller.Edit)
 		router.Put(fmt.Sprintf("%v/%v", widgets.WidgetSettingResource.ToParam(), widgets.WidgetSettingResource.ParamIDName()), controller.Update)

@@ -57,7 +57,7 @@
       var $select = $(TARGET_WIDGET);
       var tabScopeActive = $body.data('tabScopeActive');
       var isInSlideout = $('.qor-slideout').is(':visible');
-      var actionUrl = $select.closest('form').prop('action');
+      var actionUrl = $select.closest('form').data("action-url") || $select.closest('form').prop('action');
       var url;
       var clickTmpl;
 
