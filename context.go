@@ -111,6 +111,10 @@ func (context *Context) findWidgetSetting(widgetName string, scopes []string, wi
 	}
 
 	if setting == nil {
+		if widgetGroupName == "" {
+			utils.ExitWithMsg("Widget: Can't Create Widget Without Widget Type")
+			return nil
+		}
 		setting = widgetSettingResource.NewStruct().(QorWidgetSettingInterface)
 		setting.SetWidgetName(widgetName)
 		setting.SetGroupName(widgetGroupName)
