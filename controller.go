@@ -36,6 +36,18 @@ func (wc widgetController) New(context *admin.Context) {
 	context.Execute("new", widgetInter)
 }
 
+func (wc widgetController) Setting(context *admin.Context) {
+	widgetInter := wc.Widgets.WidgetSettingResource.NewStruct().(QorWidgetSettingInterface)
+	widgetType := context.Request.URL.Query().Get("widget_type")
+	if widgetType != "" {
+		if serializableMeta, ok := widgetInter.(serializable_meta.SerializableMetaInterface); ok && serializableMeta.GetSerializableArgumentKind() != widgetType {
+			serializableMeta.SetSerializableArgumentKind(widgetType)
+			serializableMeta.SetSerializableArgumentValue(nil)
+		}
+	}
+	context.Execute("setting", widgetInter)
+}
+
 func (wc widgetController) Edit(context *admin.Context) {
 	context = context.NewResourceContext(wc.Widgets.WidgetSettingResource)
 	widgetSetting, scopes, err := wc.getWidget(context)

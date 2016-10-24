@@ -13,7 +13,7 @@
       {{render "shared/errors"}}
 
       <div class="qor-form-container">
-        <form class="qor-form" action="{{url_for $result $resource}}" method="POST" enctype="multipart/form-data" data-action-url="{{url_for $result $resource}}/new">
+        <form class="qor-form" action="{{url_for $result $resource}}" method="POST" enctype="multipart/form-data" data-action-url="{{url_for $result $resource}}/!setting">
 
           <div class="qor-layout__widget" data-toggle="qor.widget">
             {{render_form $result new_sections}}
