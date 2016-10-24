@@ -45,7 +45,8 @@ func (wc widgetController) Setting(context *admin.Context) {
 			serializableMeta.SetSerializableArgumentValue(nil)
 		}
 	}
-	context.Execute("setting", widgetInter)
+	content := context.Render("setting", widgetInter)
+	context.Writer.Write([]byte(content))
 }
 
 func (wc widgetController) Edit(context *admin.Context) {
