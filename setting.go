@@ -261,6 +261,6 @@ func (qorWidgetSetting *QorWidgetSetting) ConfigureQorResource(res resource.Reso
 				Rows:  [][]string{{"Kind"}, {"SerializableMeta"}},
 			},
 		)
-		res.NewAttrs("Name", res.EditAttrs())
+		res.NewAttrs("Name", "Scope", "ActivatedAt", "Widgets", "Template")
 	}
 }
