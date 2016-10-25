@@ -45,7 +45,18 @@ func (wc widgetController) Setting(context *admin.Context) {
 			serializableMeta.SetSerializableArgumentValue(nil)
 		}
 	}
-	content := context.Render("setting", widgetInter)
+	section := []*admin.Section{{
+		Resource: wc.Widgets.WidgetSettingResource,
+		Title:    "Settings",
+		Rows:     [][]string{{"Kind"}, {"SerializableMeta"}},
+	}}
+	content := context.Render("setting", struct {
+		Widget  interface{}
+		Section []*admin.Section
+	}{
+		Widget:  widgetInter,
+		Section: section,
+	})
 	context.Writer.Write([]byte(content))
 }
 

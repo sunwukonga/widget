@@ -1,3 +1,2 @@
 {{$result := .Result}}
-{{$meta := .Resource.GetMeta "SerializableMeta" }}
-{{render_meta $result $meta "form" }}
+{{render_form $result.Widget $result.Section }}
