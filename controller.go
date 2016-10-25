@@ -41,6 +41,17 @@ func (wc widgetController) Edit(context *admin.Context) {
 	}).Execute("edit", widgetSetting)
 }
 
+func (wc widgetController) Preview(context *admin.Context) {
+	content := context.Render("preview", struct {
+		Widgets *Widgets
+		Name    string
+	}{
+		Widgets: wc.Widgets,
+		Name:    context.ResourceID,
+	})
+	context.Writer.Write([]byte(content))
+}
+
 func (wc widgetController) Update(context *admin.Context) {
 	context = context.NewResourceContext(wc.Widgets.WidgetSettingResource)
 	widgetSetting, scopes, err := wc.getWidget(context)

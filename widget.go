@@ -88,6 +88,7 @@ func (widgets *Widgets) ConfigureQorResourceBeforeInitialize(res resource.Resour
 		router := res.GetAdmin().GetRouter()
 		router.Get(widgets.WidgetSettingResource.ToParam(), controller.Index)
 		router.Get(fmt.Sprintf("%v/%v", widgets.WidgetSettingResource.ToParam(), widgets.WidgetSettingResource.ParamIDName()), controller.Edit)
+		router.Get(fmt.Sprintf("%v/%v/!preview", widgets.WidgetSettingResource.ToParam(), widgets.WidgetSettingResource.ParamIDName()), controller.Preview)
 		router.Get(fmt.Sprintf("%v/%v/edit", widgets.WidgetSettingResource.ToParam(), widgets.WidgetSettingResource.ParamIDName()), controller.Edit)
 		router.Put(fmt.Sprintf("%v/%v", widgets.WidgetSettingResource.ToParam(), widgets.WidgetSettingResource.ParamIDName()), controller.Update)
 		router.Get(fmt.Sprintf("%v/inline-edit", res.ToParam()), controller.InlineEdit)

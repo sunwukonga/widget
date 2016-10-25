@@ -1,6 +1,7 @@
 package widget
 
 import (
+	"fmt"
 	"reflect"
 	"time"
 
@@ -226,6 +227,14 @@ func (qorWidgetSetting *QorWidgetSetting) ConfigureQorResource(res resource.Reso
 					setting.SetTemplate(utils.ToString(metaValue.Value))
 				}
 			},
+		})
+
+		res.Action(&admin.Action{
+			Name: "Preview",
+			URL: func(record interface{}, context *admin.Context) string {
+				return fmt.Sprintf("%v/%v/%v/!preview", context.Admin.GetRouter().Prefix, res.ToParam(), record.(QorWidgetSettingInterface).GetWidgetName())
+			},
+			Modes: []string{"edit", "menu_item"},
 		})
 
 		res.UseTheme("widget")
