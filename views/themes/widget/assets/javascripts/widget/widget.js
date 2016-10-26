@@ -19,6 +19,7 @@
   var EVENT_DISABLE = 'disable.' + NAMESPACE;
   var EVENT_CHANGE = 'change.' + NAMESPACE;
   var TARGET_WIDGET = '[name="QorResource.Widgets"]';
+  var TARGET_WIDGET_KIND = '[name="QorResource.Kind"]';
   var CLASS_IS_NEW = 'qor-layout__widget-new';
   var CLASS_FORM_SECTION = '.qor-form-section';
   var CLASS_FORM_SETTING = '.qor-layout__widget-setting';
@@ -48,10 +49,9 @@
     },
 
     initSelect: function () {
-      var $select = $('select');
-      if (this.isNewForm) {
-        $select.filter(TARGET_WIDGET).trigger('change');
-      }
+      var $select = $('select'),
+          $element = this.$element,
+          $kind = $(TARGET_WIDGET_KIND);
 
       $select.closest(CLASS_FORM_SECTION).hide();
       $select.each(function () {
@@ -60,6 +60,18 @@
           $(this).closest(CLASS_FORM_SECTION).show();
         }
       });
+
+      if (this.isNewForm) {
+        $select.filter(TARGET_WIDGET).trigger('change');
+      } else {
+        if (!$kind.parent().next('.qor-form-section-rows').children().length) {
+          $kind.closest('.qor-form-section').hide();
+          if (!$element.find('.qor-field__label').is(':visible')) {
+            $element.append('<h2 class="qor-page__tips">' + $element.data('hint') + '</h2>').parent().find('.qor-form__actions').remove();
+          }
+        }
+      }
+
     },
 
     addWidgetSlideout: function () {
