@@ -16,6 +16,8 @@ import (
 
 // QorWidgetSettingInterface qor widget setting interface
 type QorWidgetSettingInterface interface {
+	GetWidgetType() string
+	SetWidgetType(string)
 	GetWidgetName() string
 	SetWidgetName(string)
 	GetGroupName() string
@@ -64,6 +66,16 @@ func (widgetSetting *QorWidgetSetting) GetSerializableArgumentKind() string {
 func (widgetSetting *QorWidgetSetting) SetSerializableArgumentKind(name string) {
 	widgetSetting.WidgetType = name
 	widgetSetting.Kind = name
+}
+
+// GetWidgetName get widget setting's group name
+func (qorWidgetSetting QorWidgetSetting) GetWidgetType() string {
+	return qorWidgetSetting.WidgetType
+}
+
+// SetWidgetName set widget setting's group name
+func (qorWidgetSetting *QorWidgetSetting) SetWidgetType(widgetType string) {
+	qorWidgetSetting.WidgetType = widgetType
 }
 
 // GetWidgetName get widget setting's group name
@@ -174,7 +186,11 @@ func (qorWidgetSetting *QorWidgetSetting) ConfigureQorResource(res resource.Reso
 				}
 
 				if setting, ok := result.(QorWidgetSettingInterface); ok {
-					return GetWidget(setting.GetSerializableArgumentKind()).Name
+					widget := GetWidget(setting.GetSerializableArgumentKind())
+					if widget == nil {
+						return ""
+					}
+					return widget.Name
 				}
 
 				return ""
@@ -182,10 +198,16 @@ func (qorWidgetSetting *QorWidgetSetting) ConfigureQorResource(res resource.Reso
 			Collection: func(result interface{}, context *qor.Context) (results [][]string) {
 				if setting, ok := result.(QorWidgetSettingInterface); ok {
 					groupName := setting.GetGroupName()
-					for _, group := range registeredWidgetsGroup {
-						if group.Name == groupName {
-							for _, widget := range group.Widgets {
-								results = append(results, []string{widget, widget})
+					if groupName == "" {
+						for _, widget := range registeredWidgets {
+							results = append(results, []string{widget.Name, widget.Name})
+						}
+					} else {
+						for _, group := range registeredWidgetsGroup {
+							if group.Name == groupName {
+								for _, widget := range group.Widgets {
+									results = append(results, []string{widget, widget})
+								}
 							}
 						}
 					}
@@ -248,5 +270,6 @@ func (qorWidgetSetting *QorWidgetSetting) ConfigureQorResource(res resource.Reso
 				Rows:  [][]string{{"Kind"}, {"SerializableMeta"}},
 			},
 		)
+		res.NewAttrs("Name", "Scope", "ActivatedAt", "Widgets", "Template")
 	}
 }

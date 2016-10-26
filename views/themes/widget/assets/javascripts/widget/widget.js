@@ -19,6 +19,10 @@
   var EVENT_DISABLE = 'disable.' + NAMESPACE;
   var EVENT_CHANGE = 'change.' + NAMESPACE;
   var TARGET_WIDGET = '[name="QorResource.Widgets"]';
+  var TARGET_WIDGET_KIND = '[name="QorResource.Kind"]';
+  var CLASS_IS_NEW = 'qor-layout__widget-new';
+  var CLASS_FORM_SECTION = '.qor-form-section';
+  var CLASS_FORM_SETTING = '.qor-layout__widget-setting';
 
   function QorWidget(element, options) {
     this.$element = $(element);
@@ -31,33 +35,50 @@
 
     init: function () {
       this.bind();
+      this.isNewForm = this.$element.hasClass(CLASS_IS_NEW);
       this.addWidgetSlideout();
       this.initSelect();
     },
 
     bind: function () {
-      this.$element.on(EVENT_CHANGE, 'select', this.change);
+      this.$element.on(EVENT_CHANGE, 'select', this.change.bind(this));
     },
 
     unbind: function () {
-      this.$element.off(EVENT_CHANGE, 'select', this.change);
+      this.$element.off(EVENT_CHANGE, 'select', this.change.bind(this));
     },
 
     initSelect: function () {
-      $('select').closest('.qor-form-section').hide();
-      $('select').each(function () {
+      var $select = $('select'),
+          $element = this.$element,
+          $kind = $(TARGET_WIDGET_KIND);
+
+      $select.closest(CLASS_FORM_SECTION).hide();
+      $select.each(function () {
         // TODO:
         if ($(this).find('option').filter('[value!=""]').size() >= 2) {
-          $(this).closest('.qor-form-section').show();
+          $(this).closest(CLASS_FORM_SECTION).show();
         }
       });
+
+      if (this.isNewForm) {
+        $select.filter(TARGET_WIDGET).trigger('change');
+      } else {
+        if (!$kind.parent().next('.qor-form-section-rows').children().length) {
+          $kind.closest('.qor-form-section').hide();
+          if (!$element.find('.qor-field__label').is(':visible')) {
+            $element.append('<h2 class="qor-page__tips">' + $element.data('hint') + '</h2>').parent().find('.qor-form__actions').remove();
+          }
+        }
+      }
+
     },
 
     addWidgetSlideout: function () {
       var $select = $(TARGET_WIDGET);
       var tabScopeActive = $body.data('tabScopeActive');
       var isInSlideout = $('.qor-slideout').is(':visible');
-      var actionUrl = $select.closest('form').prop('action');
+      var actionUrl = $select.closest('form').data("action-url") || $select.closest('form').prop('action');
       var url;
       var clickTmpl;
 
@@ -86,25 +107,43 @@
     },
 
     change: function (e) {
-      var $target = $(e.target);
-      var widgetValue = $target.val();
-      var isInSlideout = $('.qor-slideout').is(':visible');
+      var $target = $(e.target),
+          widgetValue = $target.val(),
+          isInSlideout = $('.qor-slideout').is(':visible');
 
       if (!$target.is(TARGET_WIDGET)) {
         return;
       }
-      var clickClass = '.qor-widget-' + widgetValue;
+      var clickClass = '.qor-widget-' + widgetValue,
+          $link = $(clickClass),
+          url = $link.prop('href');
 
       $.fn.qorSlideoutBeforeHide = null;
       window.onbeforeunload = null;
 
-      if (isInSlideout) {
-        $(clickClass).trigger('click');
+      if (this.isNewForm) {
+        this.getFormHtml(url);
       } else {
-        location.href = $(clickClass).prop('href');
+        if (isInSlideout) {
+          $link.trigger('click');
+        } else {
+          location.href = url;
+        }
       }
 
       return false;
+    },
+
+    getFormHtml: function (url) {
+      var $setting = $(CLASS_FORM_SETTING),
+          $loading = $(QorWidget.TEMPLATE_LOADING).appendTo($setting);
+
+      window.componentHandler.upgradeElement($loading.children()[0]);
+      $.get(url, function(html) {
+        $setting.html(html).trigger('enable');
+      }).fail(function() {
+        window.alert('server error, please try again!');
+      });
     },
 
     destroy: function () {
@@ -113,6 +152,8 @@
   };
 
   QorWidget.DEFAULTS = {};
+
+  QorWidget.TEMPLATE_LOADING = '<div style="text-align: center; margin-top: 30px;"><div class="mdl-spinner mdl-js-spinner is-active qor-layout__bottomsheet-spinner"></div></div>';
 
   QorWidget.plugin = function (options) {
     return this.each(function () {

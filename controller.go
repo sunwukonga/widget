@@ -31,6 +31,35 @@ func (wc widgetController) Index(context *admin.Context) {
 	}
 }
 
+func (wc widgetController) New(context *admin.Context) {
+	widgetInter := wc.Widgets.WidgetSettingResource.NewStruct().(QorWidgetSettingInterface)
+	context.Execute("new", widgetInter)
+}
+
+func (wc widgetController) Setting(context *admin.Context) {
+	widgetInter := wc.Widgets.WidgetSettingResource.NewStruct().(QorWidgetSettingInterface)
+	widgetType := context.Request.URL.Query().Get("widget_type")
+	if widgetType != "" {
+		if serializableMeta, ok := widgetInter.(serializable_meta.SerializableMetaInterface); ok && serializableMeta.GetSerializableArgumentKind() != widgetType {
+			serializableMeta.SetSerializableArgumentKind(widgetType)
+			serializableMeta.SetSerializableArgumentValue(nil)
+		}
+	}
+	section := []*admin.Section{{
+		Resource: wc.Widgets.WidgetSettingResource,
+		Title:    "Settings",
+		Rows:     [][]string{{"Kind"}, {"SerializableMeta"}},
+	}}
+	content := context.Render("setting", struct {
+		Widget  interface{}
+		Section []*admin.Section
+	}{
+		Widget:  widgetInter,
+		Section: section,
+	})
+	context.Writer.Write([]byte(content))
+}
+
 func (wc widgetController) Edit(context *admin.Context) {
 	context = context.NewResourceContext(wc.Widgets.WidgetSettingResource)
 	widgetSetting, scopes, err := wc.getWidget(context)
