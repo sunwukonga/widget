@@ -10,7 +10,6 @@ import (
 	"github.com/qor/qor"
 	"github.com/qor/qor/resource"
 	"github.com/qor/qor/utils"
-	"github.com/qor/roles"
 	"github.com/qor/serializable_meta"
 )
 
@@ -143,7 +142,7 @@ func (qorWidgetSetting *QorWidgetSetting) GetSerializableArgumentResource() *adm
 func (qorWidgetSetting *QorWidgetSetting) ConfigureQorResource(res resource.Resourcer) {
 	if res, ok := res.(*admin.Resource); ok {
 		if res.GetMeta("Name") == nil {
-			res.Meta(&admin.Meta{Name: "Name", Permission: roles.Deny(roles.Update, roles.Anyone)})
+			res.Meta(&admin.Meta{Name: "Name"})
 		}
 
 		res.Meta(&admin.Meta{
