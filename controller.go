@@ -71,7 +71,9 @@ func (wc widgetController) Edit(context *admin.Context) {
 }
 
 func (wc widgetController) Preview(context *admin.Context) {
-	content := context.Render("preview", struct {
+	content := context.Funcs(template.FuncMap{
+		"load_assets": wc.Widgets.LoadPreviewAssets,
+	}).Render("preview", struct {
 		Widgets *Widgets
 		Name    string
 	}{

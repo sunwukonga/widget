@@ -110,6 +110,22 @@ func (widgets *Widgets) RegisterViewPath(p string) {
 	}
 }
 
+// LoadPreviewAssets will return assets tag used for Preview
+func (w *Widgets) LoadPreviewAssets() template.HTML {
+	tags := ""
+	for _, asset := range w.Config.PreviewAssets {
+		extension := filepath.Ext(asset)
+		if extension == ".css" {
+			tags += fmt.Sprintf("<link rel=\"stylesheet\" type=\"text/css\" href=\"%v\">\n", asset)
+		} else if extension == ".js" {
+			tags += fmt.Sprintf("<script src=\"%v\"></script>\n", asset)
+		} else {
+			tags += fmt.Sprintf("%v\n", asset)
+		}
+	}
+	return template.HTML(tags)
+}
+
 func isExistingDir(pth string) bool {
 	fi, err := os.Stat(pth)
 	if err != nil {

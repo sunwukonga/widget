@@ -20,8 +20,9 @@ var (
 
 // Config widget config
 type Config struct {
-	DB    *gorm.DB
-	Admin *admin.Admin
+	DB            *gorm.DB
+	Admin         *admin.Admin
+	PreviewAssets []string
 }
 
 func init() {
