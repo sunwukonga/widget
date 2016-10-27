@@ -196,12 +196,12 @@ func (qorWidgetSetting *QorWidgetSetting) ConfigureQorResource(res resource.Reso
 			},
 			Collection: func(result interface{}, context *qor.Context) (results [][]string) {
 				if setting, ok := result.(QorWidgetSettingInterface); ok {
-					groupName := setting.GetGroupName()
-					if groupName == "" {
+					if setting.GetWidgetName() == "" {
 						for _, widget := range registeredWidgets {
 							results = append(results, []string{widget.Name, widget.Name})
 						}
 					} else {
+						groupName := setting.GetGroupName()
 						for _, group := range registeredWidgetsGroup {
 							if group.Name == groupName {
 								for _, widget := range group.Widgets {
