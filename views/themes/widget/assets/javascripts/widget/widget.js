@@ -51,7 +51,8 @@
     initSelect: function () {
       var $select = $('select'),
           $element = this.$element,
-          $kind = $(TARGET_WIDGET_KIND);
+          $kind = $(TARGET_WIDGET_KIND),
+          HINT_TEMPLATE = '<h2 class="qor-page__tips">' + $element.data('hint') + '</h2>';
 
       $select.closest(CLASS_FORM_SECTION).hide();
       $select.each(function () {
@@ -65,9 +66,10 @@
         $select.filter(TARGET_WIDGET).trigger('change');
       } else {
         if (!$kind.parent().next('.qor-form-section-rows').children().length) {
-          $kind.closest('.qor-form-section').hide();
-          if (!$element.find('.qor-field__label').is(':visible')) {
-            $element.append('<h2 class="qor-page__tips">' + $element.data('hint') + '</h2>').parent().find('.qor-form__actions').remove();
+          $kind.parent().next('.qor-form-section-rows').append(HINT_TEMPLATE);
+          if (!$element.find('.qor-field__label').not($kind.closest('.qor-form-section').find('.qor-field__label')).is(':visible')) {
+            $kind.closest('.qor-form-section').hide();
+            $element.append(HINT_TEMPLATE).parent().find('.qor-form__actions').remove();
           }
         }
       }
