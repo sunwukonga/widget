@@ -261,7 +261,6 @@ func (qorWidgetSetting *QorWidgetSetting) ConfigureQorResource(res resource.Reso
 		res.UseTheme("widget")
 
 		res.IndexAttrs("Name", "CreatedAt", "UpdatedAt")
-		res.ShowAttrs("Name", "Scope", "WidgetType", "Template", "Value", "CreatedAt", "UpdatedAt")
 		res.EditAttrs(
 			"Scope", "ActivatedAt", "Widgets", "Template",
 			&admin.Section{

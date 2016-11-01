@@ -1,7 +1,7 @@
 {{$resource := .Resource}}
 {{$result := .Result}}
 {{$availableScopes := widget_available_scopes}}
-{{$scopes := get_widget_scopes}}
+{{$scopes := get_widget_scopes . }}
 
 {{if $availableScopes}}
   {{$widget_scope := .Context.Request.URL.Query.Get "widget_scope"}}
