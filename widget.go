@@ -87,7 +87,6 @@ func (widgets *Widgets) ConfigureQorResourceBeforeInitialize(res resource.Resour
 		router.Get(widgets.WidgetSettingResource.ToParam(), controller.Index)
 		router.Get(fmt.Sprintf("%v/new", widgets.WidgetSettingResource.ToParam()), controller.New)
 		router.Get(fmt.Sprintf("%v/!setting", widgets.WidgetSettingResource.ToParam()), controller.Setting)
-		router.Get(fmt.Sprintf("%v/%v", widgets.WidgetSettingResource.ToParam(), widgets.WidgetSettingResource.ParamIDName()), controller.Edit)
 		router.Get(fmt.Sprintf("%v/%v/!preview", widgets.WidgetSettingResource.ToParam(), widgets.WidgetSettingResource.ParamIDName()), controller.Preview)
 		router.Get(fmt.Sprintf("%v/%v/edit", widgets.WidgetSettingResource.ToParam(), widgets.WidgetSettingResource.ParamIDName()), controller.Edit)
 		router.Put(fmt.Sprintf("%v/%v", widgets.WidgetSettingResource.ToParam(), widgets.WidgetSettingResource.ParamIDName()), controller.Update)
