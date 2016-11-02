@@ -17,7 +17,7 @@ type widgetController struct {
 
 func (wc widgetController) Index(context *admin.Context) {
 	context = context.NewResourceContext(wc.Widgets.WidgetSettingResource)
-	result, _, err := getWidget(context)
+	result, _, err := wc.getWidget(context)
 	context.AddError(err)
 
 	if context.HasError() {
@@ -62,7 +62,7 @@ func (wc widgetController) Setting(context *admin.Context) {
 
 func (wc widgetController) Edit(context *admin.Context) {
 	context = context.NewResourceContext(wc.Widgets.WidgetSettingResource)
-	widgetSetting, scopes, err := getWidget(context)
+	widgetSetting, scopes, err := wc.getWidget(context)
 	context.AddError(err)
 
 	context.Funcs(template.FuncMap{
@@ -85,7 +85,7 @@ func (wc widgetController) Preview(context *admin.Context) {
 
 func (wc widgetController) Update(context *admin.Context) {
 	context = context.NewResourceContext(wc.Widgets.WidgetSettingResource)
-	widgetSetting, scopes, err := getWidget(context)
+	widgetSetting, scopes, err := wc.getWidget(context)
 	context.AddError(err)
 
 	if context.AddError(context.Resource.Decode(context.Context, widgetSetting)); !context.HasError() {
@@ -106,7 +106,7 @@ func (wc widgetController) InlineEdit(context *admin.Context) {
 	context.Writer.Write([]byte(context.Render("widget/inline_edit")))
 }
 
-func getWidget(context *admin.Context) (interface{}, []string, error) {
+func (wc widgetController) getWidget(context *admin.Context) (interface{}, []string, error) {
 	if context.ResourceID == "" {
 		scope := context.Request.URL.Query().Get("widget_scope")
 		if scope == "" {
@@ -121,10 +121,10 @@ func getWidget(context *admin.Context) (interface{}, []string, error) {
 
 	// show page
 	var (
-		widgetSettings  = context.Resource.NewSlice()
+		widgetSettings  = wc.Widgets.WidgetSettingResource.NewSlice()
 		selectedSetting *QorWidgetSetting
 		scopes          []string
-		result          = context.Resource.NewStruct()
+		result          = wc.Widgets.WidgetSettingResource.NewStruct()
 		scope           = context.Request.URL.Query().Get("widget_scope")
 		widgetType      = context.Request.URL.Query().Get("widget_type")
 	)
