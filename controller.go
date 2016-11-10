@@ -17,6 +17,7 @@ type widgetController struct {
 
 func (wc widgetController) Index(context *admin.Context) {
 	context = context.NewResourceContext(wc.Widgets.WidgetSettingResource)
+
 	result, _, err := wc.getWidget(context)
 	context.AddError(err)
 
@@ -65,9 +66,13 @@ func (wc widgetController) Edit(context *admin.Context) {
 	widgetSetting, scopes, err := wc.getWidget(context)
 	context.AddError(err)
 
-	context.Funcs(template.FuncMap{
-		"get_widget_scopes": func() []string { return scopes },
-	}).Execute("edit", widgetSetting)
+	responder.With("html", func() {
+		context.Funcs(template.FuncMap{
+			"get_widget_scopes": func() []string { return scopes },
+		}).Execute("edit", widgetSetting)
+	}).With("json", func() {
+		context.JSON("show", widgetSetting)
+	}).Respond(context.Request)
 }
 
 func (wc widgetController) Preview(context *admin.Context) {
