@@ -123,7 +123,7 @@
             window.onbeforeunload = null;
 
             if (this.isNewForm) {
-                // this.getFormHtml(url);
+                this.getFormHtml(url);
             } else {
                 if (isInSlideout) {
                     $link.trigger('click');
@@ -141,7 +141,7 @@
 
             window.componentHandler.upgradeElement($loading.children()[0]);
             $.get(url, function(html) {
-                // $setting.html(html).trigger('enable');
+                $setting.html(html).trigger('enable');
             }).fail(function() {
                 window.alert('server error, please try again!');
             });
