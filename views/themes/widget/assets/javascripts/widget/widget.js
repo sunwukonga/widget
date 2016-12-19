@@ -20,6 +20,7 @@
     var EVENT_CHANGE = 'change.' + NAMESPACE;
     var TARGET_WIDGET = 'select[name="QorResource.Widgets"]';
     var TARGET_WIDGET_KIND = '[name="QorResource.Kind"]';
+    var SELECT_FILTER = '[name="QorResource.Widgets"],[name="QorResource.Template"]';
     var CLASS_IS_NEW = 'qor-layout__widget-new';
     var CLASS_FORM_SECTION = '.qor-form-section';
     var CLASS_FORM_SETTING = '.qor-layout__widget-setting';
@@ -49,8 +50,8 @@
         },
 
         initSelect: function() {
-            var $select = $('select'),
-                $element = this.$element,
+            var $element = this.$element,
+                $select = $element.find('select').filter(SELECT_FILTER),
                 $kind = $(TARGET_WIDGET_KIND),
                 HINT_TEMPLATE = '<h2 class="qor-page__tips">' + $element.data('hint') + '</h2>';
 
