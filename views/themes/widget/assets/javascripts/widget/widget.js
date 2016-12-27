@@ -77,28 +77,29 @@
         },
 
         addWidgetSlideout: function() {
-            var $select = $(TARGET_WIDGET);
-            var tabScopeActive = $body.data('tabScopeActive');
-            var isInSlideout = $('.qor-slideout').is(':visible');
-            var actionUrl = $select.closest('form').data("action-url") || $select.closest('form').prop('action');
-            var url;
-            var clickTmpl;
+            var $select = $(TARGET_WIDGET),
+                tabScopeActive = $body.data('tabScopeActive'),
+                isInSlideout = $('.qor-slideout').is(':visible'),
+                $form = $select.closest('form'),
+                actionUrl = $form.data("action-url") || $form.prop('action'),
+                separator = actionUrl.indexOf('?') !== -1 ? '&' : '?',
+                url,
+                clickTmpl;
 
             $select.find('option').each(function() {
-                var $this = $(this);
-                var val = $this.val();
+                var $this = $(this), val = $this.val();
 
                 if (val) {
-                    url = actionUrl + '?widget_type=' + val;
+                    url = `${actionUrl}${separator}widget_type=${val}`;
 
                     if (tabScopeActive) {
-                        url = url + '&widget_scope=' + tabScopeActive;
+                        url = `${url}&widget_scope=${tabScopeActive}`;
                     }
 
                     if (isInSlideout) {
-                        clickTmpl = '<a href=' + url + ' style="display: none;" class="qor-widget-' + val + '" data-open-type="slideout" data-url="' + url + '">' + val + '</a>';
+                        clickTmpl = `<a href=${url} style="display: none;" class="qor-widget-${val}" data-open-type="slideout" data-url="${url}">${val}</a>`;
                     } else {
-                        clickTmpl = '<a href=' + url + ' style="display: none;" class="qor-widget-' + val + '">' + val + '</a>';
+                        clickTmpl = `<a href=${url} style="display: none;" class="qor-widget-${val}">${val}</a>`;
                     }
 
                     $select.after(clickTmpl);
