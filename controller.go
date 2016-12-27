@@ -132,6 +132,7 @@ func (wc widgetController) getWidget(context *admin.Context) (interface{}, []str
 		result          = wc.Widgets.WidgetSettingResource.NewStruct()
 		scope           = context.Request.URL.Query().Get("widget_scope")
 		widgetType      = context.Request.URL.Query().Get("widget_type")
+		DB              = context.GetDB()
 	)
 
 	if scope == "" {
@@ -142,11 +143,16 @@ func (wc widgetController) getWidget(context *admin.Context) (interface{}, []str
 		widgetType = context.Request.Form.Get("QorResource.Kind")
 	}
 
+	// disable composite primary key mode when specfied scope or widget type
+	if scope != "" || widgetType != "" {
+		DB = DB.Set(admin.DisableCompositePrimaryKeyMode, "on")
+	}
+
 	if scope == "" {
 		scope = "default"
 	}
 
-	context.GetDB().Model(result).Where("name = ?", context.ResourceID).Order(gorm.Expr("scope = ?, activated_at IS NULL", "default")).Find(widgetSettings)
+	DB.Model(result).Where("name = ?", context.ResourceID).Order(gorm.Expr("scope = ?, activated_at IS NULL", "default")).Find(widgetSettings)
 
 	widgetSettingsValues := reflect.Indirect(reflect.ValueOf(widgetSettings))
 	for i := 0; i < widgetSettingsValues.Len(); i++ {
@@ -163,7 +169,7 @@ func (wc widgetController) getWidget(context *admin.Context) (interface{}, []str
 		selectedSetting = &QorWidgetSetting{Name: context.ResourceID, Scope: "default"}
 	}
 
-	err := context.GetDB().Order("activated_at IS NULL").FirstOrInit(result, selectedSetting).Error
+	err := DB.Order("activated_at IS NULL").FirstOrInit(result, selectedSetting).Error
 
 	if widgetType != "" {
 		if serializableMeta, ok := result.(serializable_meta.SerializableMetaInterface); ok && serializableMeta.GetSerializableArgumentKind() != widgetType {
