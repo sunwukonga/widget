@@ -17,6 +17,7 @@ type Context struct {
 	Options          map[string]interface{}
 	InlineEdit       bool
 	FuncMaps         template.FuncMap
+	WidgetSetting    QorWidgetSettingInterface
 }
 
 // Get get option with name
@@ -44,12 +45,25 @@ func (context *Context) GetDB() *gorm.DB {
 	return context.Widgets.Config.DB
 }
 
+func (context *Context) Clone() *Context {
+	return &Context{
+		Widgets:          context.Widgets,
+		DB:               context.DB,
+		AvailableWidgets: context.AvailableWidgets,
+		Options:          context.Options,
+		InlineEdit:       context.InlineEdit,
+		FuncMaps:         context.FuncMaps,
+		WidgetSetting:    context.WidgetSetting,
+	}
+}
+
 // Render render widget based on context
 func (context *Context) Render(widgetName string, widgetGroupName string) template.HTML {
 	var (
 		visibleScopes         []string
 		widgets               = context.Widgets
 		widgetSettingResource = widgets.WidgetSettingResource
+		clone                 = context.Clone()
 	)
 
 	for _, scope := range registeredScopes {
@@ -59,14 +73,16 @@ func (context *Context) Render(widgetName string, widgetGroupName string) templa
 	}
 
 	if setting := context.findWidgetSetting(widgetName, append(visibleScopes, "default"), widgetGroupName); setting != nil {
+		clone.WidgetSetting = setting
+
 		var (
 			prefix        = widgetSettingResource.GetAdmin().GetRouter().Prefix
 			widgetObj     = GetWidget(setting.GetSerializableArgumentKind())
-			widgetSetting = widgetObj.Context(context, setting.GetSerializableArgument(setting))
+			widgetSetting = widgetObj.Context(clone, setting.GetSerializableArgument(setting))
 			inlineEditURL = fmt.Sprintf("%v/%v/%v/edit?widget_scope=%v", prefix, widgetSettingResource.ToParam(), setting.GetWidgetName(), setting.GetScope())
 		)
 
-		if context.InlineEdit {
+		if clone.InlineEdit {
 			prefix := widgets.Resource.GetAdmin().GetRouter().Prefix
 
 			return template.HTML(fmt.Sprintf(
