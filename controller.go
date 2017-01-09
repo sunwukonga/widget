@@ -76,14 +76,17 @@ func (wc widgetController) Edit(context *admin.Context) {
 }
 
 func (wc widgetController) Preview(context *admin.Context) {
+	widgetContext := wc.Widgets.NewContext(&Context{
+		DB:      context.GetDB(),
+		Options: map[string]interface{}{"Request": context.Request, "AdminContext": context},
+	})
+
 	content := context.Funcs(template.FuncMap{
-		"load_assets": wc.Widgets.LoadPreviewAssets,
-	}).Render("preview", struct {
-		Widgets *Widgets
-		Name    string
+		"load_preview_assets": wc.Widgets.LoadPreviewAssets,
+	}).Funcs(widgetContext.FuncMap()).Render("preview", struct {
+		WidgetName string
 	}{
-		Widgets: wc.Widgets,
-		Name:    context.ResourceID,
+		WidgetName: context.ResourceID,
 	})
 	context.Writer.Write([]byte(content))
 }

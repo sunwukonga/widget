@@ -22,13 +22,15 @@
         background-color: #fff;
       }
     </style>
-    {{ load_assets }}
+    {{ load_preview_assets }}
   </head>
+
   <body>
     <div class="qor-widget-preview">
-      <h1 class="qor-widget-preview-title">{{ t "qor_admin.widget.preview" "Preview Widget:" }} {{.Result.Name}}</h1>
+      <h1 class="qor-widget-preview-title">{{ t "qor_admin.widget.preview_by_name" "Preview Widget: {{.WidgetName}}" .Result}}</h1>
+
       <div class="qor-widget-preview-container">
-        {{.Result.Widgets.Render .Result.Name "" }}
+        {{render_widget .Result.WidgetName}}
       </div>
     </div>
   </body>
