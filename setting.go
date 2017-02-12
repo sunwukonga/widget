@@ -30,9 +30,9 @@ type QorWidgetSettingInterface interface {
 
 // QorWidgetSetting default qor widget setting struct
 type QorWidgetSetting struct {
-	Name        string `gorm:"primary_key"`
-	WidgetType  string `gorm:"primary_key;size:128"`
-	Scope       string `gorm:"primary_key;size:128;default:'default'"`
+	Name        string `gorm:"primary_key;size:63"`
+	WidgetType  string `gorm:"primary_key;size:64"`
+	Scope       string `gorm:"primary_key;size:64;default:'default'"`
 	GroupName   string
 	ActivatedAt *time.Time
 	Template    string
